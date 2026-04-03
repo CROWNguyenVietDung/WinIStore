@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Đăng nhập | WinIStore</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    body {
+      background: linear-gradient(180deg, #d9ecff 0%, #c8e2ff 100%);
+      min-height: 100vh;
+    }
+    .login-head {
+      background: linear-gradient(90deg, #064a9f 0%, #0b63ce 100%);
+    }
+    .golden-text {
+      background: linear-gradient(90deg, #ffe08a 0%, #ffd24a 25%, #f7b500 50%, #ffefb7 75%, #d4a000 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 2px 10px rgba(255, 193, 7, 0.25);
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      font-size: 2.8rem;
+      line-height: 1;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="min-vh-100 d-flex align-items-center">
+    <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-7 col-lg-5">
+        <div class="card shadow border-0 overflow-hidden">
+          <div class="login-head text-white p-4">
+            <div class="golden-text">WinIStore</div>
+            <div class="fw-semibold mt-1">Đăng nhập</div>
+          </div>
+          <div class="card-body p-4 p-md-5">
+            <div id="alert" class="alert d-none" role="alert"></div>
+
+            <div id="existingSession" class="alert alert-info d-none">
+              <div class="mb-2">Trình duyệt đang lưu phiên đăng nhập trước đó.</div>
+              <button type="button" class="btn btn-sm btn-primary me-1" id="continueBtn">Tiếp tục</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="logoutLocalBtn">Xóa phiên &amp; đăng nhập lại</button>
+            </div>
+
+            <form id="loginForm" class="needs-validation" novalidate>
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                  <input name="email" type="email" class="form-control" placeholder="you@gmail.com" required />
+                  <div class="invalid-feedback">Vui lòng nhập email.</div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Mật khẩu</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                  <input id="password" name="password" type="password" class="form-control" placeholder="••••••••" required />
+                  <button class="btn btn-outline-secondary" type="button" id="togglePw" aria-label="Hiện/ẩn mật khẩu">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <div class="invalid-feedback">Vui lòng nhập mật khẩu.</div>
+                </div>
+              </div>
+              <button id="submitBtn" class="btn btn-primary w-100" type="submit">
+                <span class="me-2" id="btnSpinner" style="display:none"><span class="spinner-border spinner-border-sm"></span></span>
+                Đăng nhập
+              </button>
+              <div class="mt-3 text-center">
+                <span class="text-muted">Chưa có tài khoản?</span>
+                <a href="./register.html" class="text-decoration-none">Đăng ký</a>
+              </div>
+            </form>
+          </div>
+        </div>
+        <p class="text-center text-muted mt-3 mb-0 small">© WinIStore</p>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <script src="./app.js"></script>
+  <script>
+    const { apiPost, setSession, redirectByRole, getSession, clearSession } = window.WinIStore;
+
+    const existing = getSession();
+    const existingBox = document.getElementById("existingSession");
+    if (existing && existingBox) {
+      existingBox.classList.remove("d-none");
+      document.getElementById("continueBtn").addEventListener("click", () => redirectByRole(existing.role));
+      document.getElementById("logoutLocalBtn").addEventListener("click", () => {
+        clearSession();
+        existingBox.classList.add("d-none");
+      });
+    }
+
+    const alertEl = document.getElementById("alert");
+    const form = document.getElementById("loginForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const btnSpinner = document.getElementById("btnSpinner");
+
+    function showAlert(type, msg) {
+      alertEl.classList.remove("d-none");
+      alertEl.className = `alert alert-${type}`;
+      alertEl.textContent = msg;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("registered") === "1") {
+      showAlert("success", "Đăng ký thành công. Hãy đăng nhập.");
+    }
+
+    document.getElementById("togglePw").addEventListener("click", () => {
+      const input = document.getElementById("password");
+      const icon = document.querySelector("#togglePw i");
+      const isPw = input.type === "password";
+      input.type = isPw ? "text" : "password";
+      icon.className = isPw ? "bi bi-eye-slash" : "bi bi-eye";
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      form.classList.add("was-validated");
+      if (!form.checkValidity()) return;
+
+      const email = form.email.value.trim();
+      const password = form.password.value;
+      try {
+        btnSpinner.style.display = "inline-block";
+        submitBtn.disabled = true;
+        const user = await apiPost("/api/auth/login", { email, password });
+        setSession(user);
+        showAlert("success", "Đăng nhập thành công. Đang chuyển trang...");
+        setTimeout(() => redirectByRole(user.role), 600);
+      } catch (err) {
+        showAlert("danger", err.message || "Đăng nhập thất bại");
+      } finally {
+        btnSpinner.style.display = "none";
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
+
