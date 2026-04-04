@@ -134,7 +134,8 @@
       try {
         btnSpinner.style.display = "inline-block";
         submitBtn.disabled = true;
-        const user = await apiPost("/api/auth/login", { email, password });
+        const raw = await apiPost("/api/auth/login", { email, password });
+        const user = window.WinIStore.sessionFromAuthResponse(raw, {});
         setSession(user);
         showAlert("success", "Đăng nhập thành công. Đang chuyển trang...");
         setTimeout(() => redirectByRole(user.role), 600);

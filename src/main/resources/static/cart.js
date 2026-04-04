@@ -192,6 +192,15 @@
       showAlert(e?.message || "Không tải được dữ liệu giỏ hàng.");
     }
 
+    const visibleIds = new Set(products.map((p) => p.id));
+    const pruned = items.filter((it) => visibleIds.has(it.productId));
+    if (pruned.length !== items.length) {
+      setCart(pruned);
+      items = pruned;
+      selectedId = items[0]?.productId || null;
+      showAlert("Một số sản phẩm không còn mở bán đã được gỡ khỏi giỏ hàng.");
+    }
+
     const productsById = new Map(products.map((p) => [p.id, p]));
     render(items, productsById, selectedId);
 

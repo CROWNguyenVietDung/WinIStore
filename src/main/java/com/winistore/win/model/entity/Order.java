@@ -51,6 +51,10 @@ public class Order {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    /** Ghi chú của khách khi đặt hàng (tuỳ chọn). */
+    @Column(name = "customer_note", length = 500)
+    private String customerNote;
+
     @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> orderDetails = new ArrayList<>();

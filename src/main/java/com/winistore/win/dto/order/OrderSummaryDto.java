@@ -15,7 +15,8 @@ public record OrderSummaryDto(
         String recipientPhone,
         String shippingAddress,
         int itemCount,
-        List<OrderItemDto> items
+        List<OrderItemDto> items,
+        String customerNote
 ) {
     public record OrderItemDto(
             Long productId,

@@ -31,6 +31,13 @@
     return d.toLocaleString("vi-VN");
   }
 
+  function escapeHtml(text) {
+    if (text == null || text === "") return "";
+    const d = document.createElement("div");
+    d.textContent = String(text);
+    return d.innerHTML;
+  }
+
   function badgeClass(status) {
     if (status === "PENDING") return "text-bg-warning";
     if (status === "DELIVERING") return "text-bg-info";
@@ -69,6 +76,7 @@
           <div class="small">
             <div><span class="text-muted">Người nhận:</span> ${o.recipientName || "—"} - ${o.recipientPhone || "—"}</div>
             <div><span class="text-muted">Địa chỉ:</span> ${o.shippingAddress || "—"}</div>
+            ${o.customerNote ? `<div class="mt-2"><span class="text-muted">Ghi chú:</span> ${escapeHtml(o.customerNote)}</div>` : ""}
           </div>
         </div>
       </div>

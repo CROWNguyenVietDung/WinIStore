@@ -1,6 +1,7 @@
 package com.winistore.win.model.entity;
 
 import com.winistore.win.model.enums.RepairAppointmentStatus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,6 +12,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +22,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -44,7 +49,7 @@ public class RepairAppointment {
     private String issueDescription;
 
     @Column(name = "appointment_date", nullable = false)
-    private LocalDateTime appointmentDate;
+    private LocalDate appointmentDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -52,4 +57,9 @@ public class RepairAppointment {
 
     @Column(name = "actual_cost", precision = 18, scale = 2)
     private BigDecimal actualCost;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "repairAppointment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC, id ASC")
+    private List<RepairAppointmentImage> images = new ArrayList<>();
 }

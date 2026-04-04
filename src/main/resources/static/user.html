@@ -265,14 +265,14 @@
     </a>
 
     <div class="d-flex align-items-center gap-2 ms-auto me-2">
-      <form class="d-flex align-items-center" role="search" onsubmit="return false;">
-        <div class="input-group" style="width: 320px;">
+      <form class="d-flex align-items-center flex-wrap gap-1" role="search" onsubmit="return false;">
+        <div class="input-group" style="width: min(280px, 52vw);">
           <span class="input-group-text bg-white text-dark">
             <i class="bi bi-search"></i>
           </span>
           <input id="searchInput" type="search" class="form-control"
                  style="background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.28); color: #fff;"
-                 placeholder="Tìm kiếm..." />
+                 placeholder="Tên sản phẩm hoặc danh mục..." />
           <button id="searchBtn" class="btn btn-outline-light" type="button">
             Tìm
           </button>
@@ -301,6 +301,7 @@
         </a>
         <ul class="dropdown-menu user-dropdown-menu dropdown-menu-end">
           <li><a class="dropdown-item" href="./profile.html">Quản lý thông tin</a></li>
+          <li><a class="dropdown-item" href="./repair-appointments.html">Lịch hẹn sửa chữa</a></li>
           <li><button class="dropdown-item" type="button" id="logoutHeaderBtn">Đăng xuất</button></li>
         </ul>
       </div>
@@ -360,8 +361,13 @@
         <li class="nav-item">
           <a class="nav-link fw-semibold" href="./user.html?type=USED">Máy cũ</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link fw-semibold" href="#">Dịch vụ sửa chữa</a>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle fw-semibold" href="#" id="repairMenuDropdown" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">Dịch vụ sửa chữa</a>
+          <ul class="dropdown-menu menu-dropdown" aria-labelledby="repairMenuDropdown">
+            <li><a class="dropdown-item" href="./repair.html">Đặt lịch sửa chữa</a></li>
+            <li><a class="dropdown-item" href="./repair-appointments.html">Lịch hẹn của tôi</a></li>
+          </ul>
         </li>
       </ul>
     </div>

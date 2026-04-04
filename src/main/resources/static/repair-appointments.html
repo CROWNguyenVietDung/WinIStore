@@ -3,32 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Đơn hàng | WinIStore</title>
+  <title>Lịch hẹn của tôi | WinIStore</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <style>
-    body {
-      background: #f2f4f7;
-      padding-bottom: 0;
-    }
+    body { background: #f2f4f7; padding-bottom: 0; }
     .golden-text {
       background: linear-gradient(90deg, #ffe08a 0%, #ffd24a 25%, #f7b500 50%, #ffefb7 75%, #d4a000 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      font-weight: 800;
-      font-size: 3.375rem;
-      line-height: 1;
-      display: inline-block;
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      font-weight: 800; font-size: 3.375rem; line-height: 1; display: inline-block;
     }
     .app-header { background: linear-gradient(90deg, #0b63ce 0%, #0d7ee8 55%, #12a6ff 100%); }
     .avatar-sm { width: 34px; height: 34px; object-fit: cover; }
     .app-menu {
       background: linear-gradient(90deg, #0b63ce 0%, #0d7ee8 55%, #12a6ff 100%);
-      border: 1px solid rgba(255, 255, 255, 0.95);
-      border-radius: 0.6rem;
-      margin-top: 0;
+      border: 1px solid rgba(255, 255, 255, 0.95); border-radius: 0.6rem; margin-top: 0;
     }
     .app-menu .nav-item { margin-right: 1.4rem; }
     .app-menu .nav-link { color: #fff; font-size: 1.25rem; padding: 0.8rem 1.2rem; }
@@ -36,8 +26,7 @@
       background: rgba(255,255,255,0.14); border-radius: 0.45rem; color: #fff;
     }
     .menu-dropdown {
-      border: 1px solid #fff;
-      border-radius: 0.6rem;
+      border: 1px solid #fff; border-radius: 0.6rem;
       background: linear-gradient(180deg, rgba(11,99,206,1) 0%, rgba(18,166,255,1) 100%);
       padding: 0.3rem;
     }
@@ -46,19 +35,15 @@
       color: #fff; background: rgba(255,255,255,0.16);
     }
     .user-dropdown-menu {
-      border: 1px solid #fff;
-      border-radius: 0.75rem;
+      border: 1px solid #fff; border-radius: 0.75rem;
       background: linear-gradient(180deg, rgba(11,99,206,1) 0%, rgba(18,166,255,1) 100%);
-      padding: 0.4rem;
-      min-width: 220px;
+      padding: 0.4rem; min-width: 220px;
     }
     .user-dropdown-menu .dropdown-item { color: #fff; border-radius: 0.6rem; }
     .user-dropdown-menu .dropdown-item:hover { background: rgba(255,255,255,0.16); color: #fff; }
     .user-toggle {
-      border: 1px solid rgba(255,255,255,0.95);
-      border-radius: 0.75rem;
-      padding: 0.35rem 0.55rem;
-      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.95); border-radius: 0.75rem;
+      padding: 0.35rem 0.55rem; background: rgba(255,255,255,0.08);
     }
     .cart-count-badge, .order-pending-badge {
       display: inline-flex; align-items: center; justify-content: center;
@@ -103,7 +88,7 @@
         </a>
         <ul class="dropdown-menu user-dropdown-menu dropdown-menu-end">
           <li><a class="dropdown-item" href="./profile.html">Quản lý thông tin</a></li>
-          <li><a class="dropdown-item" href="./repair-appointments.html">Lịch hẹn sửa chữa</a></li>
+          <li><a class="dropdown-item active" href="./repair-appointments.html">Lịch hẹn của tôi</a></li>
           <li><button class="dropdown-item" type="button" id="logoutHeaderBtn">Đăng xuất</button></li>
         </ul>
       </div>
@@ -151,11 +136,11 @@
           <a class="nav-link fw-semibold" href="./user.html?type=USED">Máy cũ</a>
         </li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle fw-semibold" href="#" id="repairMenuDropdown" role="button"
+          <a class="nav-link dropdown-toggle fw-semibold active" href="#" id="repairMenuDropdown" role="button"
              data-bs-toggle="dropdown" aria-expanded="false">Dịch vụ sửa chữa</a>
           <ul class="dropdown-menu menu-dropdown" aria-labelledby="repairMenuDropdown">
             <li><a class="dropdown-item" href="./repair.html">Đặt lịch sửa chữa</a></li>
-            <li><a class="dropdown-item" href="./repair-appointments.html">Lịch hẹn của tôi</a></li>
+            <li><a class="dropdown-item active" href="./repair-appointments.html">Lịch hẹn của tôi</a></li>
           </ul>
         </li>
       </ul>
@@ -164,23 +149,49 @@
 </nav>
 
 <div class="container py-4">
-  <div id="ordersSuccessBanner" class="alert alert-success d-none" role="alert"></div>
-  <div id="ordersAlert" class="alert alert-danger d-none" role="alert"></div>
+  <div id="listAlert" class="alert alert-danger d-none" role="alert"></div>
 
-  <h4 class="fw-bold mb-2">Đơn hàng của tôi</h4>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h4 class="fw-bold mb-0">Lịch hẹn của tôi</h4>
+    <a href="./repair.html" class="btn btn-primary fw-bold"><i class="bi bi-plus-lg"></i> Đặt lịch mới</a>
+  </div>
 
-  <section class="mb-4">
-    <h5 class="fw-semibold mb-3">Đơn chưa giao</h5>
-    <div id="activeOrdersList" class="d-grid gap-3"></div>
-  </section>
+  <h5 class="fw-semibold mt-2 mb-3">Đang xử lý</h5>
+  <div id="appointmentsActiveList" class="d-grid gap-3"></div>
+  <div id="appointmentsActiveHint" class="text-muted small mb-4 d-none">Không có lịch đang xử lý.</div>
 
-  <section>
-    <h5 class="fw-semibold mb-3">Lịch sử nhận hàng</h5>
-    <div id="historyOrdersList" class="d-grid gap-3"></div>
-  </section>
+  <h5 class="fw-semibold mb-3 border-top pt-4">Đã xong / Đã hủy</h5>
+  <div id="appointmentsHistoryList" class="d-grid gap-3"></div>
+  <div id="appointmentsHistoryHint" class="text-muted small mb-3 d-none">Chưa có lịch đã kết thúc.</div>
 
-  <div id="ordersEmpty" class="text-muted text-center p-5 d-none">Bạn chưa có đơn hàng.</div>
+  <div id="appointmentsEmpty" class="text-muted text-center p-5 d-none">Bạn chưa có lịch sửa chữa.</div>
 </div>
+
+  <div class="modal fade" id="repairDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Chi tiết lịch hẹn</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2"><span class="text-muted">Thiết bị:</span> <span id="detailDevice" class="fw-semibold">—</span></div>
+          <div class="mb-2"><span class="text-muted">Ngày hẹn:</span> <span id="detailDate" class="fw-semibold">—</span></div>
+          <div class="mb-2"><span class="text-muted">Trạng thái:</span> <span id="detailStatus" class="fw-semibold">—</span></div>
+          <div class="mb-2" id="detailCostRow" class="d-none"><span class="text-muted">Chi phí:</span> <span id="detailCost" class="fw-bold text-danger">—</span></div>
+          <div class="mb-2"><div class="text-muted small">Mô tả lỗi</div><div id="detailIssue" class="small"></div></div>
+          <div class="mb-0">
+            <div class="text-muted small mb-2">Hình ảnh</div>
+            <div id="detailImages" class="d-flex flex-wrap gap-2"></div>
+            <div id="detailNoImages" class="text-muted small">Không có ảnh đính kèm.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script src="./app.js"></script>
 <script>
@@ -192,6 +203,6 @@
     }
   })();
 </script>
-<script src="./orders.js"></script>
+<script src="./repair-appointments.js"></script>
 </body>
 </html>

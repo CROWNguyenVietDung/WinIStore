@@ -252,7 +252,8 @@ public class AdminOrderController {
                 order.getCreatedAt(),
                 order.getTotalPrice(),
                 totalQuantity,
-                items
+                items,
+                order.getCustomerNote()
         );
     }
 

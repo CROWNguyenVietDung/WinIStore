@@ -4,11 +4,15 @@ import com.winistore.win.dto.auth.AuthResponse;
 import com.winistore.win.dto.auth.LoginRequest;
 import com.winistore.win.dto.auth.RegisterRequest;
 import com.winistore.win.dto.auth.UpdateAvatarRequest;
+import com.winistore.win.dto.auth.UpdateProfileRequest;
 import com.winistore.win.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +38,19 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
         return ResponseEntity.ok(authService.login(req));
+    }
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<AuthResponse> getUserProfile(@PathVariable Long id) {
+        return ResponseEntity.ok(authService.getProfile(id));
+    }
+
+    @PutMapping("/users/{id}/profile")
+    public ResponseEntity<AuthResponse> updateProfile(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateProfileRequest req
+    ) {
+        return ResponseEntity.ok(authService.updateProfile(id, req));
     }
 
     @PostMapping("/avatar")

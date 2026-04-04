@@ -14,6 +14,7 @@ public record AdminOrderResponse(
         LocalDateTime createdAt,
         BigDecimal totalPrice,
         Integer totalQuantity,
-        List<AdminOrderItemResponse> items
+        List<AdminOrderItemResponse> items,
+        String customerNote
 ) {
 }

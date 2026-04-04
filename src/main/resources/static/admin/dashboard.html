@@ -203,6 +203,12 @@
           <div class="card border-0 shadow-sm">
             <div class="card-body">
               <h2 class="h6 mb-3">Quản lý khách hàng</h2>
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-md-6 col-lg-4">
+                  <label class="form-label small text-muted mb-0" for="adminCustomersSearch">Tìm nhanh</label>
+                  <input type="search" id="adminCustomersSearch" class="form-control form-control-sm" placeholder="ID, tên, email, SĐT, username..." autocomplete="off" />
+                </div>
+              </div>
 
               <div class="table-responsive">
                 <table class="table table-hover align-middle bg-white" style="border-radius: 0.75rem; overflow: hidden;">
@@ -265,6 +271,12 @@
           <div class="card border-0 shadow-sm">
             <div class="card-body">
               <h2 class="h6 mb-3">Quản lý đơn hàng</h2>
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-md-6 col-lg-4">
+                  <label class="form-label small text-muted mb-0" for="adminOrdersSearch">Tìm nhanh</label>
+                  <input type="search" id="adminOrdersSearch" class="form-control form-control-sm" placeholder="Mã đơn, khách, email, sản phẩm..." autocomplete="off" />
+                </div>
+              </div>
               <h3 class="h6">Đơn đang xử lý</h3>
               <div class="table-responsive mb-4">
                 <table class="table table-hover align-middle bg-white" style="border-radius: 0.75rem; overflow: hidden;">
@@ -275,6 +287,7 @@
                       <th>Sản phẩm</th>
                       <th>SL</th>
                       <th>Tổng tiền</th>
+                      <th>Ghi chú</th>
                       <th>Trạng thái</th>
                       <th style="width: 200px;">Hành động</th>
                     </tr>
@@ -294,6 +307,7 @@
                       <th>Sản phẩm</th>
                       <th>SL</th>
                       <th>Tổng tiền</th>
+                      <th>Ghi chú</th>
                       <th>Trạng thái</th>
                       <th>Ngày tạo</th>
                     </tr>
@@ -318,7 +332,11 @@
                     <option value="">Tất cả</option>
                   </select>
                 </div>
-                <div class="col-md-8 text-end d-grid d-md-block">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold mb-1" for="adminProductSearch">Tìm nhanh</label>
+                  <input type="search" id="adminProductSearch" class="form-control" placeholder="Tên, ID, danh mục..." autocomplete="off" />
+                </div>
+                <div class="col-md-4 text-end d-grid d-md-block">
                   <button type="button" class="btn btn-primary btn-sm ms-auto" id="btnAddProduct">
                     <i class="bi bi-plus-lg me-1"></i> Thêm sản phẩm
                   </button>
@@ -335,10 +353,76 @@
         </div>
 
         <div id="section-repairs" class="content-section">
-          <div class="card border-0 shadow-sm">
+          <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
-              <h2 class="h6 mb-3">Lịch sửa chữa</h2>
-              <p class="text-muted mb-0">Theo dõi lịch hẹn, trạng thái và chi phí sửa chữa.</p>
+              <div class="d-flex flex-wrap align-items-end gap-3 justify-content-between">
+                <div>
+                  <h2 class="h6 mb-1">Lịch sửa chữa</h2>
+                  <p class="text-muted small mb-0">Lọc theo <strong>ngày hẹn</strong> (khách chỉ chọn ngày; cửa hàng 7h–21h hằng ngày). Hàng <span class="text-danger fw-semibold">đỏ</span> = quá ngày hẹn vẫn chưa xong; <span class="text-warning fw-semibold">vàng</span> = ngày hẹn trong hôm nay hoặc 2 ngày tới.</p>
+                </div>
+                <div class="d-flex flex-wrap align-items-end gap-2">
+                  <div>
+                    <label class="form-label small text-muted mb-0" for="adminRepairsSearch">Tìm nhanh</label>
+                    <input type="search" id="adminRepairsSearch" class="form-control form-control-sm" style="min-width: 180px;" placeholder="Khách, SĐT, thiết bị..." autocomplete="off" />
+                  </div>
+                  <div>
+                    <label class="form-label small text-muted mb-0" for="repairDateFilter">Ngày hẹn</label>
+                    <input type="date" id="repairDateFilter" class="form-control form-control-sm" />
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" id="repairsClearDateBtn">Tất cả</button>
+                  <button type="button" class="btn btn-sm btn-primary" id="repairsReloadBtn">
+                    <i class="bi bi-arrow-clockwise"></i> Tải lại
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="repairsAlert" class="alert alert-danger d-none" role="alert"></div>
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+              <div id="repairsEmpty" class="text-muted text-center p-4 d-none">Không có lịch trong khoảng đã chọn.</div>
+
+              <div id="repairsActiveBlock">
+                <div class="px-3 py-2 bg-light border-bottom fw-semibold small">Đang xử lý</div>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th style="min-width:120px">Ngày hẹn</th>
+                        <th>Khách</th>
+                        <th>Thiết bị</th>
+                        <th style="min-width:160px">Mô tả lỗi</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Chi phí</th>
+                        <th style="min-width:220px">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody id="repairsActiveBody"></tbody>
+                  </table>
+                </div>
+                <div id="repairsActiveEmpty" class="text-muted small px-3 py-2 d-none">Không có lịch đang xử lý.</div>
+              </div>
+
+              <div id="repairsHistoryBlock" class="border-top">
+                <div class="px-3 py-2 bg-light border-bottom fw-semibold small">Đã xong / Đã hủy</div>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th style="min-width:120px">Ngày hẹn</th>
+                        <th>Khách</th>
+                        <th>Thiết bị</th>
+                        <th style="min-width:160px">Mô tả lỗi</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Chi phí</th>
+                        <th style="min-width:120px">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody id="repairsHistoryBody"></tbody>
+                  </table>
+                </div>
+                <div id="repairsHistoryEmpty" class="text-muted small px-3 py-2 d-none">Không có lịch đã kết thúc.</div>
+              </div>
             </div>
           </div>
         </div>
@@ -441,6 +525,64 @@
               <div class="text-muted small">Địa chỉ</div>
               <div id="customerDetailAddresses" class="fw-semibold">—</div>
             </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal nhập chi phí khi hoàn thành sửa chữa -->
+  <div class="modal fade" id="repairCompleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Hoàn thành sửa chữa</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body">
+          <div id="repairCompleteAlert" class="alert alert-danger d-none" role="alert"></div>
+          <input type="hidden" id="repairCompleteAppointmentId" value="" />
+          <p class="small text-muted mb-2">Bắt buộc nhập số tiền thu được (VNĐ) để ghi nhận doanh thu.</p>
+          <label class="form-label fw-semibold" for="repairCompleteCost">Chi phí thực tế (VNĐ)</label>
+          <input id="repairCompleteCost" type="number" min="0" step="1000" class="form-control" placeholder="Ví dụ: 350000" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="button" class="btn btn-success" id="repairCompleteConfirmBtn">Xác nhận hoàn thành</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chi tiết lịch sửa chữa (ảnh + mô tả đầy đủ) -->
+  <div class="modal fade" id="repairDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Chi tiết lịch sửa chữa</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2 small mb-2">
+            <div class="col-md-6"><span class="text-muted">Khách:</span> <span id="adminRepairDetailCustomer" class="fw-semibold">—</span></div>
+            <div class="col-md-6"><span class="text-muted">SĐT:</span> <span id="adminRepairDetailPhone" class="fw-semibold">—</span></div>
+            <div class="col-md-6"><span class="text-muted">Email:</span> <span id="adminRepairDetailEmail" class="fw-semibold">—</span></div>
+            <div class="col-md-6"><span class="text-muted">Ngày hẹn:</span> <span id="adminRepairDetailDate" class="fw-semibold">—</span></div>
+            <div class="col-12"><span class="text-muted">Thiết bị:</span> <span id="adminRepairDetailDevice" class="fw-semibold">—</span></div>
+            <div class="col-12"><span class="text-muted">Trạng thái:</span> <span id="adminRepairDetailStatus" class="fw-semibold">—</span></div>
+            <div class="col-12 d-none" id="adminRepairDetailCostRow"><span class="text-muted">Chi phí:</span> <span id="adminRepairDetailCost" class="fw-bold text-danger">—</span></div>
+          </div>
+          <div class="mb-2">
+            <div class="text-muted small">Mô tả lỗi</div>
+            <div id="adminRepairDetailIssue" class="small text-break"></div>
+          </div>
+          <div>
+            <div class="text-muted small mb-2">Hình ảnh</div>
+            <div id="adminRepairDetailImages" class="d-flex flex-wrap gap-2"></div>
+            <div id="adminRepairDetailNoImages" class="text-muted small">Không có ảnh.</div>
           </div>
         </div>
         <div class="modal-footer">
@@ -562,6 +704,25 @@
       const ordersEmpty = document.getElementById("ordersEmpty");
       const orderHistoryBody = document.getElementById("orderHistoryBody");
       const orderHistoryEmpty = document.getElementById("orderHistoryEmpty");
+
+      const repairsActiveBody = document.getElementById("repairsActiveBody");
+      const repairsHistoryBody = document.getElementById("repairsHistoryBody");
+      const repairsEmpty = document.getElementById("repairsEmpty");
+      const repairsActiveEmpty = document.getElementById("repairsActiveEmpty");
+      const repairsHistoryEmpty = document.getElementById("repairsHistoryEmpty");
+      const repairsActiveBlock = document.getElementById("repairsActiveBlock");
+      const repairsHistoryBlock = document.getElementById("repairsHistoryBlock");
+      const repairsSectionEl = document.getElementById("section-repairs");
+      const repairDetailModalEl = document.getElementById("repairDetailModal");
+      const repairsAlert = document.getElementById("repairsAlert");
+      const repairDateFilter = document.getElementById("repairDateFilter");
+      const repairsClearDateBtn = document.getElementById("repairsClearDateBtn");
+      const repairsReloadBtn = document.getElementById("repairsReloadBtn");
+      const repairCompleteModalEl = document.getElementById("repairCompleteModal");
+      const repairCompleteAppointmentId = document.getElementById("repairCompleteAppointmentId");
+      const repairCompleteCost = document.getElementById("repairCompleteCost");
+      const repairCompleteAlert = document.getElementById("repairCompleteAlert");
+      const repairCompleteConfirmBtn = document.getElementById("repairCompleteConfirmBtn");
 
       const customerModalEl = document.getElementById("customerModal");
       const customerModalTitle = document.getElementById("customerModalTitle");
@@ -706,10 +867,21 @@
         });
       }
 
+      function applyCustomerFilter() {
+        const q = (document.getElementById("adminCustomersSearch")?.value || "").trim().toLowerCase();
+        const list = !q
+          ? customersCache
+          : customersCache.filter((c) => {
+              const t = [c.id, c.username, c.fullName, c.email, c.phone].join(" ").toLowerCase();
+              return t.includes(q);
+            });
+        renderCustomers(list);
+      }
+
       async function loadCustomers() {
         const data = await jsonFetch("/api/admin/customers", { method: "GET" });
         customersCache = data || [];
-        renderCustomers(customersCache);
+        applyCustomerFilter();
       }
 
       function formatDateTime(v) {
@@ -770,6 +942,7 @@
             <td class="small">${flattenOrderItems(o.items)}</td>
             <td>${o.totalQuantity ?? 0}</td>
             <td>${formatVnd(o.totalPrice || 0)}</td>
+            <td class="small text-break" style="max-width: 180px;">${o.customerNote ? String(o.customerNote).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "—"}</td>
             <td>
               <select class="form-select form-select-sm" data-action="status" data-id="${o.id}">
                 <option value="PENDING" ${o.status === "PENDING" ? "selected" : ""}>Chờ xử lý</option>
@@ -803,6 +976,7 @@
             <td class="small">${flattenOrderItems(o.items)}</td>
             <td>${o.totalQuantity ?? 0}</td>
             <td>${formatVnd(o.totalPrice || 0)}</td>
+            <td class="small text-break" style="max-width: 180px;">${o.customerNote ? String(o.customerNote).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "—"}</td>
             <td>${o.status === "COMPLETED" ? "Đã giao" : "Đã hủy"}</td>
             <td>${formatDateTime(o.createdAt)}</td>
           `;
@@ -810,15 +984,218 @@
         });
       }
 
+      let ordersActiveCache = [];
+      let ordersHistoryCache = [];
+
+      function orderMatchesAdminSearch(o, q) {
+        if (!q) return true;
+        const flat = [o.id, o.customerName, o.customerEmail, o.customerNote, flattenOrderItems(o.items)]
+          .join(" ")
+          .toLowerCase();
+        return flat.includes(q);
+      }
+
+      function applyOrdersFilter() {
+        const q = (document.getElementById("adminOrdersSearch")?.value || "").trim().toLowerCase();
+        const active = ordersActiveCache.filter((o) => orderMatchesAdminSearch(o, q));
+        const hist = ordersHistoryCache.filter((o) => orderMatchesAdminSearch(o, q));
+        renderOrders(active);
+        renderOrderHistory(hist);
+      }
+
       async function loadOrdersForAdmin() {
         const [active, history] = await Promise.all([
           jsonFetch("/api/admin/orders", { method: "GET" }),
           jsonFetch("/api/admin/orders/history", { method: "GET" })
         ]);
-        renderOrders(active || []);
-        renderOrderHistory(history || []);
+        ordersActiveCache = active || [];
+        ordersHistoryCache = history || [];
+        applyOrdersFilter();
       }
 
+      function escapeCell(text) {
+        if (text == null || text === "") return "";
+        return String(text)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      const REPAIR_STATUS_LABEL = {
+        PENDING: "Chờ xác nhận",
+        CONFIRMED: "Đã xác nhận",
+        IN_PROGRESS: "Đang sửa",
+        COMPLETED: "Đã xong",
+        CANCELLED: "Đã hủy",
+      };
+
+      let repairsListCache = [];
+
+      function parseRepairLocalDate(s) {
+        if (!s) return null;
+        const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (!m) return null;
+        return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      }
+
+      function startOfDay(d) {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      }
+
+      function formatRepairDate(v) {
+        const d = parseRepairLocalDate(v);
+        if (!d) return v || "—";
+        return d.toLocaleDateString("vi-VN", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" });
+      }
+
+      function appendRepairRow(tbody, r) {
+        const tr = document.createElement("tr");
+        const st = r.status || "";
+        const active = st === "PENDING" || st === "CONFIRMED" || st === "IN_PROGRESS";
+        const appt = parseRepairLocalDate(r.appointmentDate);
+        const today = new Date();
+        const t0 = startOfDay(today);
+        const tEnd = t0 + 2 * 86400000;
+        if (active && appt) {
+          const a0 = startOfDay(appt);
+          if (a0 < t0) tr.classList.add("table-danger");
+          else if (a0 >= t0 && a0 <= tEnd) tr.classList.add("table-warning");
+        }
+
+        let actions = "";
+        actions += `<button class="btn btn-sm btn-outline-info me-1 mb-1" type="button" data-repair-action="detail" data-id="${r.id}">Chi tiết</button>`;
+        if (st === "PENDING") {
+          actions += `<button class="btn btn-sm btn-primary me-1 mb-1" type="button" data-repair-action="confirm" data-id="${r.id}">Xác nhận</button>`;
+          actions += `<button class="btn btn-sm btn-outline-danger mb-1" type="button" data-repair-action="cancel" data-id="${r.id}">Hủy</button>`;
+        } else if (st === "CONFIRMED") {
+          actions += `<button class="btn btn-sm btn-primary me-1 mb-1" type="button" data-repair-action="inprogress" data-id="${r.id}">Máy đã đến</button>`;
+          actions += `<button class="btn btn-sm btn-outline-danger mb-1" type="button" data-repair-action="cancel" data-id="${r.id}">Hủy</button>`;
+        } else if (st === "IN_PROGRESS") {
+          actions += `<button class="btn btn-sm btn-success me-1 mb-1" type="button" data-repair-action="complete" data-id="${r.id}">Hoàn thành</button>`;
+          actions += `<button class="btn btn-sm btn-outline-danger mb-1" type="button" data-repair-action="cancel" data-id="${r.id}">Hủy</button>`;
+        }
+
+        const costCell =
+          r.actualCost != null && r.actualCost !== ""
+            ? formatVnd(r.actualCost)
+            : "—";
+
+        const issueShort = (r.issueDescription || "").length > 80
+          ? escapeCell((r.issueDescription || "").slice(0, 80)) + "…"
+          : escapeCell(r.issueDescription || "");
+
+        tr.innerHTML = `
+          <td class="small">${formatRepairDate(r.appointmentDate)}</td>
+          <td class="small">${escapeCell(r.customerName || "")}<br><span class="text-muted">${escapeCell(r.customerPhone || "")}</span></td>
+          <td class="small">${escapeCell(r.deviceName || "")}</td>
+          <td class="small text-break" style="max-width:200px;">${issueShort}</td>
+          <td><span class="badge text-bg-secondary">${REPAIR_STATUS_LABEL[st] || st}</span></td>
+          <td class="text-end small">${costCell}</td>
+          <td class="small">${actions || "—"}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      function showAdminRepairDetail(r) {
+        if (!repairDetailModalEl) return;
+        document.getElementById("adminRepairDetailCustomer").textContent = r.customerName || "—";
+        document.getElementById("adminRepairDetailPhone").textContent = r.customerPhone || "—";
+        document.getElementById("adminRepairDetailEmail").textContent = r.customerEmail || "—";
+        document.getElementById("adminRepairDetailDate").textContent = formatRepairDate(r.appointmentDate);
+        document.getElementById("adminRepairDetailDevice").textContent = r.deviceName || "—";
+        document.getElementById("adminRepairDetailStatus").textContent = REPAIR_STATUS_LABEL[r.status] || r.status || "—";
+        const costRow = document.getElementById("adminRepairDetailCostRow");
+        const costEl = document.getElementById("adminRepairDetailCost");
+        if (r.status === "COMPLETED" && r.actualCost != null) {
+          costRow.classList.remove("d-none");
+          costEl.textContent = formatVnd(r.actualCost);
+        } else {
+          costRow.classList.add("d-none");
+        }
+        document.getElementById("adminRepairDetailIssue").textContent = r.issueDescription || "—";
+        const wrap = document.getElementById("adminRepairDetailImages");
+        const noImg = document.getElementById("adminRepairDetailNoImages");
+        const urls = Array.isArray(r.imageUrls) ? r.imageUrls : [];
+        if (urls.length && wrap) {
+          wrap.innerHTML = urls
+            .map((u) => {
+              const src = String(u || "").replace(/"/g, "");
+              return `<a href="${src}" target="_blank" rel="noopener"><img src="${src}" class="img-thumbnail" style="max-height:140px;object-fit:cover;" alt="" /></a>`;
+            })
+            .join("");
+          wrap.classList.remove("d-none");
+          noImg.classList.add("d-none");
+        } else {
+          wrap.innerHTML = "";
+          wrap.classList.add("d-none");
+          noImg.classList.remove("d-none");
+        }
+        bootstrap.Modal.getOrCreateInstance(repairDetailModalEl).show();
+      }
+
+      function renderRepairs(list) {
+        if (!repairsActiveBody || !repairsHistoryBody) return;
+        repairsActiveBody.innerHTML = "";
+        repairsHistoryBody.innerHTML = "";
+        if (!list || list.length === 0) {
+          repairsEmpty?.classList.remove("d-none");
+          repairsActiveBlock?.classList.add("d-none");
+          repairsHistoryBlock?.classList.add("d-none");
+          return;
+        }
+        repairsEmpty?.classList.add("d-none");
+        repairsActiveBlock?.classList.remove("d-none");
+        repairsHistoryBlock?.classList.remove("d-none");
+
+        const activeStatuses = ["PENDING", "CONFIRMED", "IN_PROGRESS"];
+        const active = list.filter((x) => activeStatuses.includes(x.status));
+        const history = list.filter((x) => x.status === "COMPLETED" || x.status === "CANCELLED");
+
+        active.sort((a, b) => {
+          const da = parseRepairLocalDate(a.appointmentDate);
+          const db = parseRepairLocalDate(b.appointmentDate);
+          if (!da || !db) return 0;
+          return da - db;
+        });
+        history.sort((a, b) => {
+          const da = parseRepairLocalDate(a.appointmentDate);
+          const db = parseRepairLocalDate(b.appointmentDate);
+          if (!da || !db) return 0;
+          return db - da;
+        });
+
+        active.forEach((r) => appendRepairRow(repairsActiveBody, r));
+        history.forEach((r) => appendRepairRow(repairsHistoryBody, r));
+
+        repairsActiveEmpty?.classList.toggle("d-none", active.length > 0);
+        repairsHistoryEmpty?.classList.toggle("d-none", history.length > 0);
+      }
+
+      function renderRepairsFiltered() {
+        const q = (document.getElementById("adminRepairsSearch")?.value || "").trim().toLowerCase();
+        let list = repairsListCache;
+        if (q) {
+          list = repairsListCache.filter((r) => {
+            const t = [r.id, r.customerName, r.customerEmail, r.customerPhone, r.deviceName, r.issueDescription]
+              .join(" ")
+              .toLowerCase();
+            return t.includes(q);
+          });
+        }
+        renderRepairs(list);
+      }
+
+      async function loadRepairs() {
+        repairsAlert?.classList.add("d-none");
+        const date = repairDateFilter && repairDateFilter.value ? repairDateFilter.value.trim() : "";
+        const url = date
+          ? `/api/admin/repair-appointments?date=${encodeURIComponent(date)}`
+          : "/api/admin/repair-appointments";
+        const data = await jsonFetch(url, { method: "GET" });
+        repairsListCache = data || [];
+        renderRepairsFiltered();
+      }
 
       function showSection(id) {
         document.querySelectorAll(".content-section").forEach(el => el.classList.remove("active"));
@@ -846,6 +1223,14 @@
             ordersEmpty.textContent = err.message || "Không thể tải danh sách đơn hàng.";
           });
         }
+        if (id === "repairs") {
+          loadRepairs().catch((err) => {
+            if (repairsAlert) {
+              repairsAlert.textContent = err.message || "Không thể tải lịch sửa chữa.";
+              repairsAlert.classList.remove("d-none");
+            }
+          });
+        }
       }
 
       document.querySelectorAll(".admin-sidebar .nav-link").forEach(link => {
@@ -858,6 +1243,11 @@
 
       const hash = (location.hash || "#dashboard").replace("#", "") || "dashboard";
       showSection(["dashboard", "customers", "orders", "products", "repairs"].includes(hash) ? hash : "dashboard");
+
+      document.getElementById("adminCustomersSearch")?.addEventListener("input", () => applyCustomerFilter());
+      document.getElementById("adminOrdersSearch")?.addEventListener("input", () => applyOrdersFilter());
+      document.getElementById("adminProductSearch")?.addEventListener("input", () => applyProductAdminFilter());
+      document.getElementById("adminRepairsSearch")?.addEventListener("input", () => renderRepairsFiltered());
 
       document.getElementById("logoutBtn").addEventListener("click", function () {
         window.WinIStore.goToLogin();
@@ -955,6 +1345,126 @@
           await loadOrdersForAdmin();
         });
       }
+
+      if (repairsSectionEl) {
+        repairsSectionEl.addEventListener("click", async (e) => {
+          const btn = e.target.closest("button[data-repair-action]");
+          if (!btn) return;
+          const action = btn.getAttribute("data-repair-action");
+          const id = Number(btn.getAttribute("data-id"));
+          repairsAlert?.classList.add("d-none");
+          try {
+            if (action === "detail") {
+              const row = repairsListCache.find((x) => x.id === id);
+              if (row) showAdminRepairDetail(row);
+              return;
+            }
+            if (action === "confirm") {
+              await jsonFetch(`/api/admin/repair-appointments/${id}/status`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: "CONFIRMED" })
+              });
+              await loadRepairs();
+            }
+            if (action === "inprogress") {
+              await jsonFetch(`/api/admin/repair-appointments/${id}/status`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: "IN_PROGRESS" })
+              });
+              await loadRepairs();
+            }
+            if (action === "cancel") {
+              const ok = confirm("Hủy lịch hẹn này?");
+              if (!ok) return;
+              await jsonFetch(`/api/admin/repair-appointments/${id}/status`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: "CANCELLED" })
+              });
+              await loadRepairs();
+            }
+            if (action === "complete") {
+              if (repairCompleteAppointmentId) repairCompleteAppointmentId.value = String(id);
+              if (repairCompleteCost) repairCompleteCost.value = "";
+              repairCompleteAlert?.classList.add("d-none");
+              const modal = bootstrap.Modal.getOrCreateInstance(repairCompleteModalEl);
+              modal.show();
+            }
+          } catch (err) {
+            if (repairsAlert) {
+              repairsAlert.textContent = err.message || "Thao tác thất bại.";
+              repairsAlert.classList.remove("d-none");
+            }
+          }
+        });
+      }
+
+      repairCompleteConfirmBtn?.addEventListener("click", async () => {
+        repairCompleteAlert?.classList.add("d-none");
+        const id = Number(repairCompleteAppointmentId && repairCompleteAppointmentId.value);
+        const raw = (repairCompleteCost && repairCompleteCost.value || "").trim();
+        const cost = Number(raw);
+        if (!Number.isFinite(cost) || cost < 0) {
+          if (repairCompleteAlert) {
+            repairCompleteAlert.textContent = "Nhập số tiền hợp lệ (≥ 0).";
+            repairCompleteAlert.classList.remove("d-none");
+          }
+          return;
+        }
+        repairCompleteConfirmBtn.disabled = true;
+        try {
+          await jsonFetch(`/api/admin/repair-appointments/${id}/status`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "COMPLETED", actualCost: cost })
+          });
+          const m = bootstrap.Modal.getInstance(repairCompleteModalEl);
+          if (m) m.hide();
+          await loadRepairs();
+        } catch (err) {
+          if (repairCompleteAlert) {
+            repairCompleteAlert.textContent = err.message || "Không cập nhật được.";
+            repairCompleteAlert.classList.remove("d-none");
+          }
+        } finally {
+          repairCompleteConfirmBtn.disabled = false;
+        }
+      });
+
+      repairsReloadBtn?.addEventListener("click", () => {
+        loadRepairs().catch((err) => {
+          if (repairsAlert) {
+            repairsAlert.textContent = err.message || "Không tải được dữ liệu.";
+            repairsAlert.classList.remove("d-none");
+          }
+        });
+      });
+
+      repairsClearDateBtn?.addEventListener("click", () => {
+        if (repairDateFilter) repairDateFilter.value = "";
+        loadRepairs().catch((err) => {
+          if (repairsAlert) {
+            repairsAlert.textContent = err.message || "Không tải được dữ liệu.";
+            repairsAlert.classList.remove("d-none");
+          }
+        });
+      });
+
+      repairDateFilter?.addEventListener("change", () => {
+        loadRepairs().catch((err) => {
+          if (repairsAlert) {
+            repairsAlert.textContent = err.message || "Không tải được dữ liệu.";
+            repairsAlert.classList.remove("d-none");
+          }
+        });
+      });
+
+      repairCompleteModalEl?.addEventListener("hidden.bs.modal", () => {
+        if (repairCompleteCost) repairCompleteCost.value = "";
+        repairCompleteAlert?.classList.add("d-none");
+      });
 
       customerSaveBtn.addEventListener("click", async () => {
         try {
@@ -1067,7 +1577,6 @@
       const productSaveBtn = document.getElementById("productSaveBtn");
 
       let productModalMode = "add"; // add | edit | details
-      let productsCache = [];
       let selectedProductImageFile = null;
 
       function showProductFormError(msg) {
@@ -1143,13 +1652,26 @@
         `;
       }
 
+      let productsRawCache = [];
+
       function renderProducts(list) {
         productsGrid.innerHTML = "";
         productsEmpty.classList.toggle("d-none", !!list && list.length > 0);
         if (!list || list.length === 0) return;
 
-        productsCache = list;
         productsGrid.innerHTML = list.map(productCardHtml).join("");
+      }
+
+      function applyProductAdminFilter() {
+        const q = (document.getElementById("adminProductSearch")?.value || "").trim().toLowerCase();
+        let list = productsRawCache;
+        if (q) {
+          list = productsRawCache.filter((p) => {
+            const t = [p.id, p.name, p.categoryName, p.categoryType].join(" ").toLowerCase();
+            return t.includes(q);
+          });
+        }
+        renderProducts(list);
       }
 
       async function loadCategoriesForModal() {
@@ -1169,7 +1691,8 @@
         const categoryIdRaw = productCategorySelect ? productCategorySelect.value : "";
         const url = categoryIdRaw ? `/api/admin/products?categoryId=${categoryIdRaw}` : `/api/admin/products`;
         const data = await jsonFetch(url, { method: "GET" });
-        renderProducts(data || []);
+        productsRawCache = data || [];
+        applyProductAdminFilter();
       }
 
       function setModalForAdd() {

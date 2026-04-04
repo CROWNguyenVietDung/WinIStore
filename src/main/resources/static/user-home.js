@@ -3,6 +3,7 @@
   const API_BY_CATEGORY = "/api/public/products/by-category";
   const API_BY_TYPE = "/api/public/products/by-type";
   const API_PROMOTIONS = "/api/public/products/promotions";
+  const API_SEARCH = "/api/public/products/search";
 
   const els = {
     homeFilterCard: () => document.getElementById("homeFilterCard"),
@@ -54,10 +55,21 @@
     const categoryName = (sp.get("categoryName") || "").trim();
     const type = (sp.get("type") || "").trim().toUpperCase();
     const promotions = (sp.get("promotions") || "").trim();
-    const isCategoryMode = !!categoryName;
-    const isTypeMode = !isCategoryMode && !!type;
-    const isPromotionsMode = !isCategoryMode && !isTypeMode && (promotions === "1" || promotions.toLowerCase() === "true");
-    return { categoryName, type, isCategoryMode, isTypeMode, isPromotionsMode };
+    const searchQ = (sp.get("search") || "").trim();
+    const isSearchMode = !!searchQ;
+    const isCategoryMode = !isSearchMode && !!categoryName;
+    const isTypeMode = !isSearchMode && !isCategoryMode && !!type;
+    const isPromotionsMode =
+      !isSearchMode && !isCategoryMode && !isTypeMode && (promotions === "1" || promotions.toLowerCase() === "true");
+    return {
+      categoryName,
+      type,
+      searchQ,
+      isSearchMode,
+      isCategoryMode,
+      isTypeMode,
+      isPromotionsMode,
+    };
   }
 
   function showAlert(msg) {
@@ -94,26 +106,29 @@
           ? `<span class="badge text-bg-success">Còn ${stock}</span>`
           : `<span class="badge text-bg-secondary">Hết hàng</span>`;
 
+    const pid = p?.id != null ? String(p.id) : "";
     return `
       <div class="col-6 col-md-4 col-lg-3">
         <div class="product-card h-100">
           <button class="cart-fab" type="button" title="Thêm vào giỏ"
-                  data-action="addToCart" data-id="${p?.id}">
+                  data-action="addToCart" data-id="${pid}">
             <i class="bi bi-cart-plus"></i>
           </button>
-          <img class="product-img" src="${img}" alt="${(p?.name || "").replace(/"/g, "&quot;")}">
-          <div class="p-3">
-            <div class="fw-semibold mb-1" style="min-height: 40px;">
-              ${p?.name || "—"}
+          <a class="text-decoration-none text-dark d-block" href="./product.html?id=${encodeURIComponent(pid)}">
+            <img class="product-img" src="${img}" alt="${(p?.name || "").replace(/"/g, "&quot;")}">
+            <div class="p-3">
+              <div class="fw-semibold mb-1" style="min-height: 40px;">
+                ${p?.name || "—"}
+              </div>
+              <div class="d-flex align-items-center justify-content-between">
+                ${priceHtml}
+                ${stockBadge}
+              </div>
+              <div class="mt-2">
+                <span class="sold-badge">Đã bán ${sold}</span>
+              </div>
             </div>
-            <div class="d-flex align-items-center justify-content-between">
-              ${priceHtml}
-              ${stockBadge}
-            </div>
-            <div class="mt-2">
-              <span class="sold-badge">Đã bán ${sold}</span>
-            </div>
-          </div>
+          </a>
         </div>
       </div>
     `;
@@ -181,6 +196,24 @@
       const msg =
         (data && (data.message || data.detail || data.error || data.title)) ||
         `Không tải được sản phẩm (HTTP ${res.status})`;
+      throw new Error(msg);
+    }
+    return Array.isArray(data) ? data : [];
+  }
+
+  async function loadSearchResults(keyword) {
+    showAlert("");
+    const params = new URLSearchParams();
+    params.set("q", keyword);
+    params.set("limit", "48");
+
+    const res = await fetch(`${API_SEARCH}?${params}`, { method: "GET" });
+    const contentType = res.headers.get("content-type") || "";
+    const data = contentType.includes("application/json") ? await res.json() : null;
+    if (!res.ok) {
+      const msg =
+        (data && (data.message || data.detail || data.error || data.title)) ||
+        `Không tìm được (HTTP ${res.status})`;
       throw new Error(msg);
     }
     return Array.isArray(data) ? data : [];
@@ -277,6 +310,27 @@
     }
   }
 
+  async function refreshSearch() {
+    const mode = getModeFromUrl();
+    hideFilterInCatalogMode();
+    setSectionVisible(els.sectionAccessories(), false);
+    setSectionVisible(els.sectionUsed(), false);
+    setSectionVisible(els.sectionPhones(), true);
+    const titleEl = els.sectionPhones()?.querySelector("h4");
+    if (titleEl) titleEl.textContent = "Kết quả tìm kiếm";
+
+    try {
+      const list = await loadSearchResults(mode.searchQ);
+      renderList(els.phonesGrid(), list);
+      if (!list.length) {
+        showAlert("Không tìm thấy sản phẩm đang mở bán phù hợp.");
+      }
+    } catch (e) {
+      showAlert(e?.message || "Có lỗi khi tìm kiếm.");
+      renderList(els.phonesGrid(), []);
+    }
+  }
+
   function wireEvents() {
     els.applyBtn()?.addEventListener("click", refreshHome);
     els.clearBtn()?.addEventListener("click", () => {
@@ -360,7 +414,7 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     wireEvents();
-    updateCartBadge();
+    void window.WinIStore?.syncCartCountBadge?.();
 
     document.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-action='addToCart']");
@@ -371,7 +425,9 @@
     });
 
     const mode = getModeFromUrl();
-    if (mode.isCategoryMode || mode.isTypeMode || mode.isPromotionsMode) {
+    if (mode.isSearchMode) {
+      refreshSearch();
+    } else if (mode.isCategoryMode || mode.isTypeMode || mode.isPromotionsMode) {
       refreshCatalog();
     } else {
       showFilterInHomeMode();

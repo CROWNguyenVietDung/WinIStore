@@ -6,7 +6,10 @@ import com.winistore.win.model.entity.Product;
 import com.winistore.win.repository.ProductRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import com.winistore.win.dto.product.ProductDetailDto;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +25,38 @@ public class PublicProductController {
 
     public PublicProductController(ProductRepository productRepository) {
         this.productRepository = productRepository;
+    }
+
+    @GetMapping("/search")
+    public List<ProductCardDto> searchProducts(
+            @RequestParam String q,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(defaultValue = "48") int limit
+    ) {
+        String term = sanitizeLikeParam(q);
+        if (term.isEmpty()) {
+            return List.of();
+        }
+        term = term.toLowerCase(Locale.ROOT);
+        int safeLimit = Math.max(1, Math.min(limit, 60));
+        var pageable = PageRequest.of(0, safeLimit, Sort.by(Sort.Direction.DESC, "id"));
+        Long catFilter = (categoryId != null && categoryId > 0) ? categoryId : null;
+        return productRepository
+                .searchVisibleByKeywordAndOptionalCategory(term, catFilter, pageable)
+                .stream()
+                .filter(this::isVisibleForUser)
+                .map(this::toCardDto)
+                .toList();
+    }
+
+    private static String sanitizeLikeParam(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        return raw.replace("\\", "")
+                .replace("%", "")
+                .replace("_", "")
+                .trim();
     }
 
     @GetMapping("/home")
@@ -175,6 +210,35 @@ public class PublicProductController {
                 .filter(this::isVisibleForUser)
                 .map(this::toCardDto)
                 .toList();
+    }
+
+    @GetMapping("/detail/{id}")
+    public ResponseEntity<ProductDetailDto> getDetail(@PathVariable Long id) {
+        if (id == null || id <= 0) {
+            return ResponseEntity.notFound().build();
+        }
+        return productRepository.findById(id)
+                .filter(this::isVisibleForUser)
+                .map(this::toDetailDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    private ProductDetailDto toDetailDto(Product p) {
+        var c = p.getCategory();
+        return new ProductDetailDto(
+                p.getId(),
+                p.getName(),
+                p.getPrice(),
+                normalizeDiscountPercent(p.getDiscountPercent()),
+                p.getStockQuantity(),
+                p.getSoldQuantity() == null ? 0 : p.getSoldQuantity(),
+                p.getImageUrl(),
+                c != null ? c.getId() : null,
+                c != null ? c.getName() : null,
+                c != null ? c.getType() : null,
+                p.getDescription()
+        );
     }
 
     private int normalizeDiscountPercent(Integer v) {

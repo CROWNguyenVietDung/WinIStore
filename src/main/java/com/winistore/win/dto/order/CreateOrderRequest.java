@@ -8,7 +8,8 @@ public record CreateOrderRequest(
         String paymentMethod,
         String recipientName,
         String recipientPhone,
-        String shippingAddress
+        String shippingAddress,
+        String customerNote
 ) {
     public record CreateOrderItem(
             Long productId,

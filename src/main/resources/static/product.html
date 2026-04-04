@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Đơn hàng | WinIStore</title>
+  <title>Chi tiết sản phẩm | WinIStore</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <style>
-    body {
-      background: #f2f4f7;
-      padding-bottom: 0;
-    }
+    html, body { height: 100%; overflow: hidden; }
+    body { background: #f2f4f7; }
     .golden-text {
       background: linear-gradient(90deg, #ffe08a 0%, #ffd24a 25%, #f7b500 50%, #ffefb7 75%, #d4a000 100%);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
+      text-shadow: 0 2px 10px rgba(255, 193, 7, 0.25);
       font-weight: 800;
+      letter-spacing: 0.2px;
       font-size: 3.375rem;
       line-height: 1;
       display: inline-block;
@@ -33,43 +33,73 @@
     .app-menu .nav-item { margin-right: 1.4rem; }
     .app-menu .nav-link { color: #fff; font-size: 1.25rem; padding: 0.8rem 1.2rem; }
     .app-menu .nav-link:hover, .app-menu .nav-link:focus, .app-menu .nav-link.show {
-      background: rgba(255,255,255,0.14); border-radius: 0.45rem; color: #fff;
+      color: #fff; background: rgba(255, 255, 255, 0.14); border-radius: 0.45rem;
     }
     .menu-dropdown {
-      border: 1px solid #fff;
-      border-radius: 0.6rem;
+      border: 1px solid #fff; border-radius: 0.6rem;
       background: linear-gradient(180deg, rgba(11,99,206,1) 0%, rgba(18,166,255,1) 100%);
       padding: 0.3rem;
     }
     .menu-dropdown .dropdown-item { color: #fff; border-radius: 0.45rem; }
     .menu-dropdown .dropdown-item:hover, .menu-dropdown .dropdown-item:focus {
-      color: #fff; background: rgba(255,255,255,0.16);
+      color: #fff; background: rgba(255, 255, 255, 0.16);
     }
     .user-dropdown-menu {
-      border: 1px solid #fff;
-      border-radius: 0.75rem;
+      border: 1px solid #ffffff; border-radius: 0.75rem; overflow: hidden;
       background: linear-gradient(180deg, rgba(11,99,206,1) 0%, rgba(18,166,255,1) 100%);
-      padding: 0.4rem;
-      min-width: 220px;
+      padding: 0.4rem; min-width: 220px;
     }
-    .user-dropdown-menu .dropdown-item { color: #fff; border-radius: 0.6rem; }
-    .user-dropdown-menu .dropdown-item:hover { background: rgba(255,255,255,0.16); color: #fff; }
+    .user-dropdown-menu .dropdown-item {
+      color: rgba(255, 255, 255, 0.96); border-radius: 0.6rem;
+      padding: 0.55rem 0.85rem; margin: 0.15rem 0;
+    }
+    .user-dropdown-menu .dropdown-item:hover, .user-dropdown-menu .dropdown-item:focus {
+      background: rgba(255, 255, 255, 0.16); color: #ffffff;
+    }
     .user-toggle {
-      border: 1px solid rgba(255,255,255,0.95);
-      border-radius: 0.75rem;
-      padding: 0.35rem 0.55rem;
-      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255, 255, 255, 0.95); border-radius: 0.75rem;
+      padding: 0.35rem 0.55rem; background: rgba(255, 255, 255, 0.08);
     }
-    .cart-count-badge, .order-pending-badge {
+    .user-toggle:hover { background: rgba(255, 255, 255, 0.14); }
+    .page-root { height: 100vh; display: flex; flex-direction: column; }
+    .top-area { flex: 0 0 auto; background: #f2f4f7; z-index: 50; }
+    .product-scroll {
+      flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding-bottom: 12px;
+    }
+    .price-sale { color: #dc3545; }
+    .price-original-strike {
+      color: #111827; text-decoration: line-through; font-weight: 600; font-size: 0.95rem;
+    }
+    .discount-badge {
+      background: #ffe08a; color: #dc3545;
+      border: 1px solid rgba(220, 53, 69, 0.25);
+      font-weight: 800; padding: 0.2rem 0.5rem; border-radius: 999px;
+      font-size: 0.85rem;
+    }
+    .sold-badge {
+      background: #4b5563; color: #fff; font-weight: 700;
+      padding: 0.15rem 0.45rem; border-radius: 0.5rem; font-size: 0.75rem;
+    }
+    .detail-hero-img {
+      max-height: 420px; width: 100%; object-fit: contain;
+      background: #f8fafc;
+    }
+    .cart-count-badge {
       display: inline-flex; align-items: center; justify-content: center;
       min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px;
-      font-weight: 900; font-size: 0.75rem; line-height: 1;
+      background: #ffc107; color: #111827; font-weight: 900; font-size: 0.75rem; line-height: 1;
     }
-    .cart-count-badge { background: #ffc107; color: #111827; }
-    .order-pending-badge { background: #fd7e14; color: #fff; }
+    .order-pending-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px;
+      background: #fd7e14; color: #fff; font-weight: 900; font-size: 0.75rem; line-height: 1;
+    }
   </style>
 </head>
 <body>
+<div class="page-root">
+<div class="top-area">
 <nav class="navbar navbar-expand navbar-dark app-header py-3">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center gap-2" href="./user.html">
@@ -77,28 +107,29 @@
     </a>
     <div class="d-flex align-items-center gap-2 ms-auto me-2">
       <form class="d-flex align-items-center flex-wrap gap-1" role="search" onsubmit="return false;">
-        <div class="input-group" style="width: min(260px, 50vw);">
+        <div class="input-group" style="width: min(280px, 52vw);">
           <span class="input-group-text bg-white text-dark"><i class="bi bi-search"></i></span>
           <input id="searchInput" type="search" class="form-control"
-                 style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.28); color:#fff;"
+                 style="background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.28); color: #fff;"
                  placeholder="Tên sản phẩm hoặc danh mục..." />
           <button id="searchBtn" class="btn btn-outline-light" type="button">Tìm</button>
         </div>
       </form>
-      <a class="btn btn-outline-light d-flex align-items-center gap-2 fw-bold" href="./cart.html">
+      <a id="cartBtn" class="btn btn-outline-light d-flex align-items-center gap-2 fw-bold" href="./cart.html">
         <i class="bi bi-cart"></i> Giỏ hàng
         <span id="cartCountBadge" class="cart-count-badge d-none">0</span>
       </a>
-      <a class="btn btn-outline-light d-flex align-items-center gap-2 fw-bold" href="./orders.html">
+      <a id="orderBtn" class="btn btn-outline-light d-flex align-items-center gap-2 fw-bold" href="./orders.html">
         <i class="bi bi-receipt"></i> Đơn hàng
         <span id="orderPendingBadge" class="order-pending-badge d-none">0</span>
       </a>
     </div>
     <div class="d-flex align-items-center gap-2">
-      <div id="userMenu" class="dropdown">
+      <div id="userMenu" class="d-none dropdown">
         <a class="user-toggle d-flex align-items-center gap-2 text-decoration-none dropdown-toggle" href="#"
-           data-bs-toggle="dropdown">
-          <img id="headerAvatarImg" class="rounded-circle border bg-white avatar-sm" src="https://placehold.co/34x34/png?text=A" alt="">
+           id="userMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+          <img id="headerAvatarImg" class="rounded-circle border bg-white avatar-sm"
+               src="https://placehold.co/34x34/png?text=A" alt="avatar">
           <span id="headerFullName" class="fw-semibold text-white">—</span>
         </a>
         <ul class="dropdown-menu user-dropdown-menu dropdown-menu-end">
@@ -106,6 +137,10 @@
           <li><a class="dropdown-item" href="./repair-appointments.html">Lịch hẹn sửa chữa</a></li>
           <li><button class="dropdown-item" type="button" id="logoutHeaderBtn">Đăng xuất</button></li>
         </ul>
+      </div>
+      <div id="authButtons" class="d-flex gap-2">
+        <a class="btn btn-outline-light fw-bold" href="./login.html">Đăng nhập</a>
+        <a class="btn btn-primary fw-bold" href="./register.html">Đăng ký</a>
       </div>
     </div>
   </div>
@@ -119,13 +154,10 @@
     </button>
     <div class="collapse navbar-collapse" id="mainMenu">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link fw-semibold" href="./user.html">Trang chủ</a>
-        </li>
+        <li class="nav-item"><a class="nav-link fw-semibold" href="./user.html">Trang chủ</a></li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle fw-semibold" href="#" id="phoneMenuDropdown" role="button"
-             data-bs-toggle="dropdown" aria-expanded="false">Điện thoại</a>
-          <ul class="dropdown-menu menu-dropdown" aria-labelledby="phoneMenuDropdown">
+          <a class="nav-link dropdown-toggle fw-semibold" href="#" data-bs-toggle="dropdown">Điện thoại</a>
+          <ul class="dropdown-menu menu-dropdown">
             <li><a class="dropdown-item" href="./user.html?categoryName=IPhone">IPhone</a></li>
             <li><a class="dropdown-item" href="./user.html?categoryName=SamSung">SamSung</a></li>
             <li><a class="dropdown-item" href="./user.html?categoryName=Oppo">Oppo</a></li>
@@ -134,9 +166,8 @@
           </ul>
         </li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle fw-semibold" href="#" id="accessoryMenuDropdown" role="button"
-             data-bs-toggle="dropdown" aria-expanded="false">Phụ kiện</a>
-          <ul class="dropdown-menu menu-dropdown" aria-labelledby="accessoryMenuDropdown">
+          <a class="nav-link dropdown-toggle fw-semibold" href="#" data-bs-toggle="dropdown">Phụ kiện</a>
+          <ul class="dropdown-menu menu-dropdown">
             <li><a class="dropdown-item" href="./user.html?categoryName=Phụ%20kiện%20Apple">Phụ kiên Apple</a></li>
             <li><a class="dropdown-item" href="./user.html?categoryName=Bảo%20vệ%20máy">Bảo vệ máy</a></li>
             <li><a class="dropdown-item" href="./user.html?categoryName=Âm%20thanh">Âm thanh</a></li>
@@ -144,12 +175,8 @@
             <li><a class="dropdown-item" href="./user.html?categoryName=USB%2FThẻ%20nhớ">USB/Thẻ nhớ</a></li>
           </ul>
         </li>
-        <li class="nav-item">
-          <a class="nav-link fw-semibold" href="./user.html?promotions=1">Khuyến mãi</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link fw-semibold" href="./user.html?type=USED">Máy cũ</a>
-        </li>
+        <li class="nav-item"><a class="nav-link fw-semibold" href="./user.html?promotions=1">Khuyến mãi</a></li>
+        <li class="nav-item"><a class="nav-link fw-semibold" href="./user.html?type=USED">Máy cũ</a></li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle fw-semibold" href="#" id="repairMenuDropdown" role="button"
              data-bs-toggle="dropdown" aria-expanded="false">Dịch vụ sửa chữa</a>
@@ -162,36 +189,60 @@
     </div>
   </div>
 </nav>
+</div>
 
-<div class="container py-4">
-  <div id="ordersSuccessBanner" class="alert alert-success d-none" role="alert"></div>
-  <div id="ordersAlert" class="alert alert-danger d-none" role="alert"></div>
-
-  <h4 class="fw-bold mb-2">Đơn hàng của tôi</h4>
-
-  <section class="mb-4">
-    <h5 class="fw-semibold mb-3">Đơn chưa giao</h5>
-    <div id="activeOrdersList" class="d-grid gap-3"></div>
-  </section>
-
-  <section>
-    <h5 class="fw-semibold mb-3">Lịch sử nhận hàng</h5>
-    <div id="historyOrdersList" class="d-grid gap-3"></div>
-  </section>
-
-  <div id="ordersEmpty" class="text-muted text-center p-5 d-none">Bạn chưa có đơn hàng.</div>
+<div class="product-scroll">
+  <div class="container py-4">
+    <div id="detailAlert" class="alert alert-warning d-none" role="alert"></div>
+    <div id="detailMount"></div>
+  </div>
 </div>
 
 <script src="./app.js"></script>
+<script src="./product-detail.js"></script>
 <script>
   (function () {
-    const u = window.WinIStore.getSession();
-    if (u) {
-      document.getElementById("headerFullName").textContent = u.fullName || u.email || "—";
-      document.getElementById("headerAvatarImg").src = u.avatar || "https://placehold.co/34x34/png?text=A";
+    const { getSession, goToLogin, wireStoreHeader, syncCartCountBadge, refreshOrderPendingBadge } = window.WinIStore;
+    const user = getSession();
+    const userMenu = document.getElementById("userMenu");
+    const authButtons = document.getElementById("authButtons");
+    const logoutHeaderBtn = document.getElementById("logoutHeaderBtn");
+    const headerAvatarImg = document.getElementById("headerAvatarImg");
+    const headerFullName = document.getElementById("headerFullName");
+
+    function setLoggedIn(u) {
+      userMenu.classList.remove("d-none");
+      authButtons.classList.add("d-none");
+      if (u) {
+        headerFullName.textContent = u.fullName || u.email || "—";
+        headerAvatarImg.src = u.avatar || "https://placehold.co/34x34/png?text=A";
+      }
     }
+    function setLoggedOut() {
+      userMenu.classList.add("d-none");
+      authButtons.classList.remove("d-none");
+      headerAvatarImg.src = "https://placehold.co/34x34/png?text=A";
+      headerFullName.textContent = "—";
+    }
+    logoutHeaderBtn.addEventListener("click", () => goToLogin());
+    if (user) setLoggedIn(user);
+    else setLoggedOut();
+    wireStoreHeader?.();
+    void refreshOrderPendingBadge?.();
+    window.addEventListener("storage", (ev) => {
+      if (ev.key === "winstore_cart") syncCartCountBadge?.();
+    });
   })();
 </script>
-<script src="./orders.js"></script>
+
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 2000;">
+  <div id="cartToast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">Đã thêm vào giỏ hàng</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
+    </div>
+  </div>
+</div>
+</div>
 </body>
 </html>

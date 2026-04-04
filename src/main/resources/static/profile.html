@@ -106,14 +106,14 @@
       <span class="golden-text">WinIStore</span>
     </a>
     <div class="d-flex align-items-center gap-2 ms-auto me-2">
-      <form class="d-flex align-items-center" role="search" onsubmit="return false;">
-        <div class="input-group" style="width: 320px;">
+      <form class="d-flex align-items-center flex-wrap gap-1" role="search" onsubmit="return false;">
+        <div class="input-group" style="width: min(280px, 52vw);">
           <span class="input-group-text bg-white text-dark">
             <i class="bi bi-search"></i>
           </span>
           <input id="searchInput" type="search" class="form-control"
                  style="background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.28); color: #fff;"
-                 placeholder="Tìm kiếm..." />
+                 placeholder="Tên sản phẩm hoặc danh mục..." />
           <button id="searchBtn" class="btn btn-outline-light" type="button">
             Tìm
           </button>
@@ -136,6 +136,7 @@
         </a>
         <ul class="dropdown-menu user-dropdown-menu dropdown-menu-end">
           <li><a class="dropdown-item" href="./profile.html">Quản lý thông tin</a></li>
+          <li><a class="dropdown-item" href="./repair-appointments.html">Lịch hẹn sửa chữa</a></li>
           <li><button class="dropdown-item" type="button" id="logoutHeaderBtn">Đăng xuất</button></li>
         </ul>
       </div>
@@ -190,8 +191,13 @@
         <li class="nav-item">
           <a class="nav-link fw-semibold" href="./user.html?type=USED">Máy cũ</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link fw-semibold" href="#">Dịch vụ sửa chữa</a>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle fw-semibold" href="#" id="repairMenuDropdown" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">Dịch vụ sửa chữa</a>
+          <ul class="dropdown-menu menu-dropdown" aria-labelledby="repairMenuDropdown">
+            <li><a class="dropdown-item" href="./repair.html">Đặt lịch sửa chữa</a></li>
+            <li><a class="dropdown-item" href="./repair-appointments.html">Lịch hẹn của tôi</a></li>
+          </ul>
         </li>
       </ul>
     </div>
@@ -284,10 +290,21 @@
 
 <script src="./app.js"></script>
 <script>
-  (function () {
-    const { getSession, setSession, requireAuth, goToLogin, wireStoreHeader, syncCartCountBadge, refreshOrderPendingBadge } = window.WinIStore;
-    const user = requireAuth("USER");
+  (async function () {
+    const { getSession, setSession, requireAuth, goToLogin, wireStoreHeader, syncCartCountBadge, refreshOrderPendingBadge, apiPut, sessionFromAuthResponse } = window.WinIStore;
+    let user = requireAuth("USER");
     if (!user) return;
+
+    try {
+      const res = await fetch(`${window.WinIStore.API_BASE || ""}/api/auth/users/${user.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        user = sessionFromAuthResponse(data, user);
+        setSession(user);
+      }
+    } catch (e) {
+      /* mạng lỗi — dùng session local */
+    }
 
     const headerFullName = document.getElementById("headerFullName");
     const headerAvatarImg = document.getElementById("headerAvatarImg");
@@ -301,8 +318,13 @@
     const avatarPreview = document.getElementById("avatarPreview");
     let addresses = Array.isArray(user.addresses) ? user.addresses : [];
     let selectedAvatarFile = null;
-    if (addresses.length === 0 && user.address) {
-      addresses = [{ detail: user.address, isDefault: true }];
+    if (addresses.length === 0 && user.address && String(user.address).trim()) {
+      addresses = [{
+        recipientName: user.fullName || "",
+        phone: user.phone || "",
+        detail: String(user.address).trim(),
+        isDefault: true,
+      }];
     }
 
     function showAlert(type, message) {
@@ -339,7 +361,25 @@
         phone: card.querySelector(".addr-phone").value.trim(),
         detail: card.querySelector(".addr-detail").value.trim(),
         isDefault: card.querySelector(".addr-default").checked || (i === 0 && cards.length === 1),
-      })).filter(a => a.detail);
+      }));
+    }
+
+    /** Bỏ dòng trống hoàn toàn; báo lỗi nếu có dòng đang nhập dở (có tên/SĐT nhưng thiếu địa chỉ). */
+    function normalizeAddressesForSave(raw) {
+      const nonEmpty = raw.filter((a) => a.detail || a.recipientName || a.phone);
+      for (const a of nonEmpty) {
+        if (!a.detail) {
+          return { error: "Mỗi địa chỉ cần có ô \"Địa chỉ chi tiết\". Hoàn thành hoặc xóa dòng chưa nhập xong." };
+        }
+      }
+      return { list: nonEmpty.filter((a) => a.detail) };
+    }
+
+    function profileNamePhoneFromForm() {
+      return {
+        name: (document.getElementById("fullName").value || "").trim(),
+        phone: (document.getElementById("phone").value || "").trim(),
+      };
     }
 
     document.getElementById("fullName").value = user.fullName || "";
@@ -359,12 +399,19 @@
         avatarPreview.src = URL.createObjectURL(selectedAvatarFile);
       } else {
         selectedAvatarFile = null;
-        avatarPreview.src = user.avatar || "https://placehold.co/100x100/png?text=A";
+        const s = getSession();
+        avatarPreview.src = (s && s.avatar) ? s.avatar : "https://placehold.co/100x100/png?text=A";
       }
     });
 
     addAddressBtn.addEventListener("click", () => {
-      addresses.push({ recipientName: "", phone: "", detail: "", isDefault: addresses.length === 0 });
+      const { name, phone } = profileNamePhoneFromForm();
+      addresses.push({
+        recipientName: name,
+        phone,
+        detail: "",
+        isDefault: addresses.length === 0,
+      });
       renderAddresses();
     });
 
@@ -375,7 +422,19 @@
         return;
       }
 
-      const updatedAddresses = readAddressesFromUi();
+      const rawAddr = readAddressesFromUi();
+      const normalized = normalizeAddressesForSave(rawAddr);
+      if (normalized.error) {
+        showAlert("danger", normalized.error);
+        return;
+      }
+      let updatedAddresses = normalized.list;
+      for (const a of updatedAddresses) {
+        if (!a.recipientName.trim() || !a.phone.trim()) {
+          showAlert("danger", "Mỗi địa chỉ cần có tên người nhận và số điện thoại.");
+          return;
+        }
+      }
       let hasDefault = updatedAddresses.some(a => a.isDefault);
       if (updatedAddresses.length && !hasDefault) {
         updatedAddresses[0].isDefault = true;
@@ -389,41 +448,69 @@
         });
       }
 
-      const updatedUser = {
+      const genderVal = document.getElementById("gender").value;
+      const formEmail = document.getElementById("email").value.trim();
+      const draftForApi = {
         ...user,
         fullName: document.getElementById("fullName").value.trim(),
-        email: document.getElementById("email").value.trim(),
+        email: formEmail,
         phone: document.getElementById("phone").value.trim(),
         dob: document.getElementById("dob").value,
-        gender: document.getElementById("gender").value,
+        gender: genderVal,
         avatar: user.avatar || "",
         addresses: updatedAddresses,
         address: updatedAddresses.find(a => a.isDefault)?.detail || "",
       };
 
       try {
-        setSession(updatedUser);
+        const profilePayload = {
+          fullName: draftForApi.fullName,
+          phone: draftForApi.phone,
+          dateOfBirth: draftForApi.dob || null,
+          addresses: updatedAddresses.map((a) => ({
+            recipientName: a.recipientName || "",
+            recipientPhone: a.phone || "",
+            detail: a.detail || "",
+            isDefault: !!a.isDefault,
+          })),
+        };
+        let merged = sessionFromAuthResponse(await apiPut(`/api/auth/users/${user.id}/profile`, profilePayload), draftForApi);
+        merged.gender = genderVal;
+        if (formEmail && formEmail !== merged.email) {
+          merged.email = formEmail;
+        }
+        setSession(merged);
+        user = merged;
 
         if (selectedAvatarFile) {
           const formData = new FormData();
-          formData.append("email", updatedUser.email);
+          formData.append("email", merged.email);
           formData.append("file", selectedAvatarFile);
           const res = await fetch("/api/auth/avatar/upload", { method: "POST", body: formData });
           const text = await res.text();
           let data = null;
           try { data = text ? JSON.parse(text) : null; } catch (err) { data = null; }
           if (!res.ok) throw new Error((data && data.message) ? data.message : "Upload avatar thất bại");
-          if (data && data.avatar) {
-            updatedUser.avatar = data.avatar;
-            setSession(updatedUser);
+          if (data) {
+            merged = sessionFromAuthResponse(data, merged);
+            merged.gender = genderVal;
+            if (formEmail && formEmail !== merged.email) merged.email = formEmail;
+            setSession(merged);
+            user = merged;
           }
         }
 
         showAlert("success", "Cập nhật thông tin thành công.");
-        headerFullName.textContent = updatedUser.fullName || updatedUser.email || "—";
-        headerAvatarImg.src = updatedUser.avatar || "https://placehold.co/34x34/png?text=A";
-        avatarPreview.src = updatedUser.avatar || "https://placehold.co/100x100/png?text=A";
-        addresses = updatedAddresses;
+        headerFullName.textContent = merged.fullName || merged.email || "—";
+        headerAvatarImg.src = merged.avatar || "https://placehold.co/34x34/png?text=A";
+        avatarPreview.src = merged.avatar || "https://placehold.co/100x100/png?text=A";
+        document.getElementById("fullName").value = merged.fullName || "";
+        document.getElementById("email").value = merged.email || "";
+        document.getElementById("phone").value = merged.phone || "";
+        document.getElementById("dob").value = merged.dob || "";
+        addresses = Array.isArray(merged.addresses) ? merged.addresses : [];
+        selectedAvatarFile = null;
+        avatarFileInput.value = "";
         renderAddresses();
         void refreshOrderPendingBadge?.();
       } catch (err) {

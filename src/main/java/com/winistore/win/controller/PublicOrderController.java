@@ -111,6 +111,7 @@ public class PublicOrderController {
                 .status(OrderStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .totalPrice(BigDecimal.ZERO)
+                .customerNote(sanitizeCustomerNote(req.customerNote()))
                 .build();
         order = orderRepository.save(order);
 
@@ -191,7 +192,8 @@ public class PublicOrderController {
                 recipientPhone,
                 shippingAddress,
                 itemCount,
-                items
+                items,
+                trimToNull(o.getCustomerNote())
         );
     }
 
@@ -217,6 +219,18 @@ public class PublicOrderController {
         if (s == null) return null;
         String t = s.trim();
         return t.isEmpty() ? null : t;
+    }
+
+    private static final int MAX_CUSTOMER_NOTE = 500;
+
+    private String sanitizeCustomerNote(String raw) {
+        if (raw == null) return null;
+        String t = raw.trim();
+        if (t.isEmpty()) return null;
+        if (t.length() > MAX_CUSTOMER_NOTE) {
+            t = t.substring(0, MAX_CUSTOMER_NOTE);
+        }
+        return t;
     }
 
     private BigDecimal discountedUnitPrice(BigDecimal price, Integer discountPercent) {

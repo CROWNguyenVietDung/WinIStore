@@ -45,9 +45,11 @@
 
   function normalizeAddresses(user) {
     let list = Array.isArray(user.addresses) ? user.addresses : [];
-    if (list.length === 0 && user.address) {
-      list = [{ recipientName: user.fullName || "", phone: user.phone || "", detail: user.address, isDefault: true }];
+    const legacy = (user.address && String(user.address).trim()) ? String(user.address).trim() : "";
+    if (list.length === 0 && legacy) {
+      list = [{ recipientName: user.fullName || "", phone: user.phone || "", detail: legacy, isDefault: true }];
     }
+    list = list.filter((a) => a && String(a.detail || "").trim());
     if (list.length && !list.some((a) => a.isDefault)) {
       list[0] = { ...list[0], isDefault: true };
     }
@@ -115,9 +117,9 @@
 
   function getSelectedAddressIndex(addresses) {
     const el = document.querySelector("input[name='addrPick']:checked");
-    if (!el || !addresses.length) return 0;
+    if (!el || !addresses.length) return -1;
     const v = Number(el.value);
-    return Number.isFinite(v) ? v : 0;
+    return Number.isFinite(v) ? v : -1;
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -127,6 +129,7 @@
     const user = requireAuth("USER");
     if (!user) return;
 
+    await window.WinIStore?.pruneUnavailableCartItems?.();
     let items = getCart();
     if (!items.length) {
       window.location.href = "./cart.html";
@@ -135,6 +138,18 @@
 
     let sessionUser = getSession() || user;
     let addresses = normalizeAddresses(sessionUser);
+
+    try {
+      const res = await fetch(`${window.WinIStore.API_BASE || ""}/api/auth/users/${sessionUser.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        sessionUser = window.WinIStore.sessionFromAuthResponse(data, sessionUser);
+        window.WinIStore.setSession(sessionUser);
+        addresses = normalizeAddresses(sessionUser);
+      }
+    } catch (e) {
+      /* offline */
+    }
 
     const alertEl = document.getElementById("checkoutAlert");
     function showAlert(msg) {
@@ -151,6 +166,17 @@
       products = ids.length ? await fetchProductsByIds(ids) : [];
     } catch (e) {
       showAlert(e?.message || "Không tải được sản phẩm.");
+    }
+    const visibleIds = new Set(products.map((p) => p.id));
+    const pruned = items.filter((it) => visibleIds.has(it.productId));
+    if (pruned.length !== items.length) {
+      setCart(pruned);
+      items = pruned;
+      showAlert("Một số sản phẩm không còn mở bán đã được gỡ khỏi giỏ hàng.");
+    }
+    if (!items.length) {
+      window.location.href = "./cart.html";
+      return;
     }
     const productsById = new Map(products.map((p) => [p.id, p]));
 
@@ -206,10 +232,17 @@
 
     document.getElementById("btnAddAddress")?.addEventListener("click", () => {
       const box = document.getElementById("newAddressForm");
+      const wasHidden = box?.classList.contains("d-none");
       box?.classList.toggle("d-none");
+      if (wasHidden && box && !box.classList.contains("d-none")) {
+        const nn = document.getElementById("newAddrName");
+        const np = document.getElementById("newAddrPhone");
+        if (nn && !String(nn.value || "").trim()) nn.value = sessionUser.fullName || "";
+        if (np && !String(np.value || "").trim()) np.value = sessionUser.phone || "";
+      }
     });
 
-    document.getElementById("btnSaveNewAddress")?.addEventListener("click", () => {
+    document.getElementById("btnSaveNewAddress")?.addEventListener("click", async () => {
       const name = (document.getElementById("newAddrName")?.value || "").trim();
       const phone = (document.getElementById("newAddrPhone")?.value || "").trim();
       const detail = (document.getElementById("newAddrDetail")?.value || "").trim();
@@ -222,6 +255,12 @@
       nextList.push({ recipientName: name, phone, detail, isDefault: true });
       addresses = nextList;
       sessionUser = persistUserAddresses(sessionUser, addresses);
+      try {
+        sessionUser = await window.WinIStore.syncUserProfile(sessionUser, addresses);
+        addresses = normalizeAddresses(sessionUser);
+      } catch (e) {
+        showAlert(e?.message || "Không lưu địa chỉ lên máy chủ. Địa chỉ chỉ dùng được trong phiên này.");
+      }
       renderAddressRadios(addresses, addresses.length - 1);
       document.getElementById("newAddressForm")?.classList.add("d-none");
       document.getElementById("newAddrName").value = "";
@@ -243,6 +282,10 @@
 
       if (addresses.length) {
         const i = getSelectedAddressIndex(addresses);
+        if (i < 0 || i >= addresses.length) {
+          showAlert("Vui lòng chọn một địa chỉ trong danh sách.");
+          return;
+        }
         const a = addresses[i] || {};
         name = (a.recipientName || "").trim();
         phone = (a.phone || "").trim();
@@ -256,12 +299,12 @@
       if (!name) name = (sessionUser.fullName || "").trim();
       if (!phone) phone = (sessionUser.phone || "").trim();
 
-      if (pm === "STORE_PICKUP" && (!addrText || addrText.length < 3)) {
-        addrText = "Nhận tại cửa hàng WinIStore";
-      }
-
-      if (pm !== "STORE_PICKUP" && !addrText) {
-        showAlert("Vui lòng chọn hoặc nhập địa chỉ giao hàng.");
+      if (!addrText || addrText.length < 3) {
+        showAlert(
+          addresses.length
+            ? "Địa chỉ đã chọn không hợp lệ. Vui lòng cập nhật tại mục Quản lý thông tin."
+            : "Vui lòng nhập đầy đủ địa chỉ (ô địa chỉ chi tiết, ít nhất 3 ký tự). Với nhận tại cửa hàng, bạn có thể ghi rõ \"Nhận tại cửa hàng WinIStore\"."
+        );
         return;
       }
       if (!name || !phone) {
@@ -272,6 +315,7 @@
       const btn = document.getElementById("btnConfirmOrder");
       try {
         btn.disabled = true;
+        const noteRaw = (document.getElementById("orderNote")?.value || "").trim();
         const payload = {
           userId,
           items: items.map((x) => ({ productId: x.productId, quantity: x.quantity || 1 })),
@@ -279,6 +323,7 @@
           recipientName: name,
           recipientPhone: phone,
           shippingAddress: addrText,
+          customerNote: noteRaw.length ? noteRaw.slice(0, 500) : null,
         };
 
         const res = await fetch(API_CREATE_ORDER, {
