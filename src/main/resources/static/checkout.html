@@ -274,13 +274,18 @@
             <input class="form-check-input" type="radio" name="paymentMethod" id="pmVnpay" value="VNPAY">
             <label class="form-check-label" for="pmVnpay">Thanh toán trực tiếp (VNPay)</label>
           </div>
+          <div id="vnpayMethodWrap" class="mt-2 d-none">
+            <label class="form-label small mb-1" for="vnpayBankCode">Kênh thanh toán VNPay (TEST)</label>
+            <select id="vnpayBankCode" class="form-select form-select-sm">
+              <option value="">Tự chọn trên cổng VNPay</option>
+              <option value="NCB">Thẻ ATM nội địa NCB (test card)</option>
+              <option value="VNPAYQR">VNPAYQR</option>
+              <option value="VISA">Thẻ quốc tế (VISA/Master/JCB)</option>
+            </select>
+          </div>
           <p id="pickupHint" class="text-muted small mb-0">Bạn sẽ đến cửa hàng để nhận máy. Phí giao hàng: miễn phí.</p>
           <p id="codHint" class="text-muted small mb-0 d-none">Đơn sẽ được giao và thu tiền khi nhận hàng. Có phí vận chuyển.</p>
-          <div id="vnpayQrPanel" class="mt-3 p-3 border rounded-3 bg-white text-center d-none">
-            <div class="fw-semibold mb-2">Quét mã VNPay (demo)</div>
-            <img src="./images/vnpay-qr-demo.svg" alt="VNPay QR demo" class="img-fluid" style="max-width: 220px;" />
-            <div class="small text-muted mt-2">Đây là QR minh họa. Sau khi chuyển khoản, bấm “Xác nhận đặt hàng” để tạo đơn.</div>
-          </div>
+          <p id="vnpayHint" class="text-muted small mb-0 d-none">Bạn sẽ được chuyển sang cổng VNPay. Đơn hàng chỉ tạo khi thanh toán thành công.</p>
         </div>
       </div>
 

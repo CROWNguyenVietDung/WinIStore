@@ -5,6 +5,6 @@ public enum PaymentMethod {
     STORE_PICKUP,
     /** Thanh toán khi nhận hàng */
     COD,
-    /** Thanh toán chuyển khoản (VNPay — demo hiển thị QR tĩnh) */
+    /** Thanh toán online qua cổng VNPay */
     VNPAY
 }

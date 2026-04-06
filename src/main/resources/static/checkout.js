@@ -1,6 +1,7 @@
 (() => {
   const API_BY_IDS = "/api/public/products/by-ids";
   const API_CREATE_ORDER = "/api/public/orders";
+  const API_VNPAY_CREATE = "/api/public/payments/vnpay/create";
   const SHIPPING_STANDARD = 30000;
 
   const { requireAuth, setSession, getSession, wireStoreHeader } = window.WinIStore;
@@ -208,16 +209,15 @@
       r.addEventListener("change", () => {
         refreshTotals();
         const v = selectedPayment();
-        document.getElementById("vnpayQrPanel")?.classList.toggle("d-none", v !== "VNPAY");
+        document.getElementById("vnpayMethodWrap")?.classList.toggle("d-none", v !== "VNPAY");
+        document.getElementById("vnpayHint")?.classList.toggle("d-none", v !== "VNPAY");
         document.getElementById("codHint")?.classList.toggle("d-none", v !== "COD");
         document.getElementById("pickupHint")?.classList.toggle("d-none", v !== "STORE_PICKUP");
       });
     });
 
-    const vnpayPanel = document.getElementById("vnpayQrPanel");
-    if (vnpayPanel) {
-      vnpayPanel.classList.toggle("d-none", selectedPayment() !== "VNPAY");
-    }
+    document.getElementById("vnpayMethodWrap")?.classList.toggle("d-none", selectedPayment() !== "VNPAY");
+    document.getElementById("vnpayHint")?.classList.toggle("d-none", selectedPayment() !== "VNPAY");
     document.getElementById("codHint")?.classList.toggle("d-none", selectedPayment() !== "COD");
     document.getElementById("pickupHint")?.classList.toggle("d-none", selectedPayment() !== "STORE_PICKUP");
 
@@ -320,11 +320,30 @@
           userId,
           items: items.map((x) => ({ productId: x.productId, quantity: x.quantity || 1 })),
           paymentMethod: pm,
+          bankCode: pm === "VNPAY" ? (document.getElementById("vnpayBankCode")?.value || "") : null,
           recipientName: name,
           recipientPhone: phone,
           shippingAddress: addrText,
           customerNote: noteRaw.length ? noteRaw.slice(0, 500) : null,
         };
+
+        if (pm === "VNPAY") {
+          const vnpRes = await fetch(API_VNPAY_CREATE, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const ct = vnpRes.headers.get("content-type") || "";
+          const data = ct.includes("application/json") ? await vnpRes.json() : null;
+          if (!vnpRes.ok) {
+            throw new Error((data && data.message) ? data.message : `HTTP ${vnpRes.status}`);
+          }
+          if (!data || !data.paymentUrl) {
+            throw new Error("Không lấy được URL thanh toán VNPay.");
+          }
+          window.location.href = data.paymentUrl;
+          return;
+        }
 
         const res = await fetch(API_CREATE_ORDER, {
           method: "POST",
