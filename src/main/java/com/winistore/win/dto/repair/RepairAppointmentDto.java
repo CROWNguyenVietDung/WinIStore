@@ -11,6 +11,7 @@ public record RepairAppointmentDto(
         LocalDate appointmentDate,
         String status,
         BigDecimal actualCost,
-        List<String> imageUrls
+        List<String> imageUrls,
+        List<String> suggestedDates
 ) {
 }

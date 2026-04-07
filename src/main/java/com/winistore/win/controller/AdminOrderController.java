@@ -158,6 +158,7 @@ public class AdminOrderController {
 
         restoreInventory(order);
         order.setStatus(OrderStatus.CANCELLED);
+        order.setCancelReason(null);
         orderRepository.save(order);
         return toResponse(order);
     }
@@ -253,7 +254,8 @@ public class AdminOrderController {
                 order.getTotalPrice(),
                 totalQuantity,
                 items,
-                order.getCustomerNote()
+                order.getCustomerNote(),
+                order.getCancelReason()
         );
     }
 

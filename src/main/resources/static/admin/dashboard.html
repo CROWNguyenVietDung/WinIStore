@@ -135,6 +135,9 @@
         <a class="nav-link" href="#" data-section="products">
           <i class="bi bi-box-seam"></i> Quản lý sản phẩm
         </a>
+        <a class="nav-link" href="#" data-section="vouchers">
+          <i class="bi bi-ticket-perforated"></i> Quản lý voucher
+        </a>
         <a class="nav-link" href="#" data-section="repairs">
           <i class="bi bi-wrench-adjustable"></i> Lịch sửa chữa
         </a>
@@ -157,9 +160,9 @@
 
       <main class="flex-grow-1 p-4 overflow-auto">
         <div id="section-dashboard" class="content-section active">
-          <div class="row g-3 mb-4">
-            <div class="col-sm-6 col-xl-3">
-              <div class="card stat-card">
+          <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-5 g-3 mb-4">
+            <div class="col">
+              <div class="card stat-card h-100">
                 <div class="card-body">
                   <div class="text-muted small">Khách hàng</div>
                   <div id="dashCustomersCount" class="fs-4 fw-bold text-primary">—</div>
@@ -167,8 +170,8 @@
                 </div>
               </div>
             </div>
-            <div class="col-sm-6 col-xl-3">
-              <div class="card stat-card">
+            <div class="col">
+              <div class="card stat-card h-100">
                 <div class="card-body">
                   <div class="text-muted small">Đơn hàng</div>
                   <div id="dashOpenOrdersCount" class="fs-4 fw-bold text-success">—</div>
@@ -176,8 +179,8 @@
                 </div>
               </div>
             </div>
-            <div class="col-sm-6 col-xl-3">
-              <div class="card stat-card">
+            <div class="col">
+              <div class="card stat-card h-100">
                 <div class="card-body">
                   <div class="text-muted small">Sản phẩm</div>
                   <div id="dashProductsCount" class="fs-4 fw-bold text-warning">—</div>
@@ -185,18 +188,107 @@
                 </div>
               </div>
             </div>
-            <div class="col-sm-6 col-xl-3">
-              <div class="card stat-card">
+            <div class="col">
+              <div class="card stat-card h-100">
                 <div class="card-body">
-                  <div class="text-muted small">Doanh thu đã giao</div>
-                  <div id="dashCompletedRevenue" class="fs-4 fw-bold text-info">—</div>
-                  <small class="text-muted">Tổng từ đơn hoàn tất</small>
+                  <div class="text-muted small">Sản phẩm đã hủy</div>
+                  <div id="dashCancelledProductsCount" class="fs-4 fw-bold text-secondary">—</div>
+                  <small class="text-muted">Từ đơn bị hủy</small>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card stat-card h-100">
+                <div class="card-body">
+                  <div class="text-muted small">Sản phẩm đã bán</div>
+                  <div id="dashSoldProductsCount" class="fs-4 fw-bold text-success">—</div>
+                  <small class="text-muted">Từ đơn đã giao</small>
                 </div>
               </div>
             </div>
           </div>
 
           <div id="dashboardAlert" class="alert alert-warning d-none" role="alert"></div>
+
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2 class="h6 mb-0 text-danger">Cảnh báo đánh giá 1 sao</h2>
+                <span class="badge text-bg-danger" id="dashOneStarCount">0</span>
+              </div>
+              <div id="dashOneStarAlerts" class="small text-muted">Đang tải dữ liệu...</div>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+              <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-3">
+                  <label class="form-label small text-muted mb-0" for="dashRevenuePreset">Xem doanh thu theo</label>
+                  <select id="dashRevenuePreset" class="form-select form-select-sm">
+                    <option value="all">Toàn bộ</option>
+                    <option value="day">Theo ngày</option>
+                    <option value="month">Theo tháng</option>
+                    <option value="year">Theo năm</option>
+                    <option value="range">Khoảng thời gian</option>
+                  </select>
+                </div>
+                <div class="col-12 col-md-3 d-none" id="dashFilterDayWrap">
+                  <label class="form-label small text-muted mb-0" for="dashRevenueDate">Ngày</label>
+                  <input id="dashRevenueDate" type="date" class="form-control form-control-sm" />
+                </div>
+                <div class="col-12 col-md-3 d-none" id="dashFilterMonthWrap">
+                  <label class="form-label small text-muted mb-0" for="dashRevenueMonth">Tháng</label>
+                  <input id="dashRevenueMonth" type="month" class="form-control form-control-sm" />
+                </div>
+                <div class="col-12 col-md-3 d-none" id="dashFilterYearWrap">
+                  <label class="form-label small text-muted mb-0" for="dashRevenueYear">Năm</label>
+                  <input id="dashRevenueYear" type="number" min="2000" max="2999" class="form-control form-control-sm" placeholder="2026" />
+                </div>
+                <div class="col-12 col-md-3 d-none" id="dashFilterFromWrap">
+                  <label class="form-label small text-muted mb-0" for="dashRevenueFrom">Từ ngày</label>
+                  <input id="dashRevenueFrom" type="date" class="form-control form-control-sm" />
+                </div>
+                <div class="col-12 col-md-3 d-none" id="dashFilterToWrap">
+                  <label class="form-label small text-muted mb-0" for="dashRevenueTo">Đến ngày</label>
+                  <input id="dashRevenueTo" type="date" class="form-control form-control-sm" />
+                </div>
+                <div class="col-12 col-md-2">
+                  <button type="button" class="btn btn-sm btn-primary w-100" id="dashApplyRevenueFilterBtn">Áp dụng</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6 col-xl-4">
+              <div class="card stat-card">
+                <div class="card-body">
+                  <div class="text-muted small">Doanh thu đơn hàng</div>
+                  <div id="dashCompletedRevenue" class="fs-4 fw-bold text-info">—</div>
+                  <small class="text-muted">Từ đơn đã giao</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-xl-4">
+              <div class="card stat-card">
+                <div class="card-body">
+                  <div class="text-muted small">Doanh thu sửa chữa</div>
+                  <div id="dashRepairRevenue" class="fs-4 fw-bold text-warning">—</div>
+                  <small class="text-muted">Từ lịch sửa đã xong</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-xl-4">
+              <div class="card stat-card">
+                <div class="card-body">
+                  <div class="text-muted small">Doanh thu tổng</div>
+                  <div id="dashTotalRevenue" class="fs-4 fw-bold text-success">—</div>
+                  <small class="text-muted">Đơn hàng + sửa chữa</small>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div class="row g-3 mb-3">
             <div class="col-12 col-xl-6">
@@ -389,6 +481,75 @@
               <div id="productsEmpty" class="text-muted text-center p-4 d-none">
                 Chưa có sản phẩm.
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="section-vouchers" class="content-section">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <h2 class="h6 mb-3">Quản lý voucher</h2>
+              <div id="voucherFormAlert" class="alert alert-danger d-none" role="alert"></div>
+              <input type="hidden" id="voucherId" value="" />
+              <div class="row g-2 mb-3">
+                <div class="col-md-3">
+                  <label class="form-label small text-muted mb-0">Mã voucher</label>
+                  <input id="voucherCode" type="text" class="form-control form-control-sm" placeholder="SINHVIEN" />
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label small text-muted mb-0">Loại</label>
+                  <select id="voucherType" class="form-select form-select-sm">
+                    <option value="ORDER_FIXED">Giảm tiền đơn</option>
+                    <option value="ORDER_PERCENT">Giảm % đơn</option>
+                    <option value="SHIPPING_FIXED">Giảm tiền ship</option>
+                    <option value="SHIPPING_PERCENT">Giảm % ship</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label small text-muted mb-0">Giá trị giảm</label>
+                  <input id="voucherValue" type="number" min="0" class="form-control form-control-sm" />
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label small text-muted mb-0">Đơn tối thiểu</label>
+                  <input id="voucherMinOrder" type="number" min="0" class="form-control form-control-sm" value="0" />
+                </div>
+                <div class="col-md-1">
+                  <label class="form-label small text-muted mb-0">Bật</label>
+                  <select id="voucherActive" class="form-select form-select-sm">
+                    <option value="true">Có</option>
+                    <option value="false">Không</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label small text-muted mb-0">Bắt đầu</label>
+                  <input id="voucherStartAt" type="datetime-local" class="form-control form-control-sm" />
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label small text-muted mb-0">Kết thúc</label>
+                  <input id="voucherEndAt" type="datetime-local" class="form-control form-control-sm" />
+                </div>
+              </div>
+              <div class="d-flex gap-2 mb-3">
+                <button id="voucherSaveBtn" type="button" class="btn btn-primary btn-sm">Lưu voucher</button>
+                <button id="voucherResetBtn" type="button" class="btn btn-outline-secondary btn-sm">Làm mới form</button>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle bg-white" style="border-radius: 0.75rem; overflow: hidden;">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Mã</th>
+                      <th>Loại</th>
+                      <th>Giá trị</th>
+                      <th>Đơn tối thiểu</th>
+                      <th>Hiệu lực</th>
+                      <th>Trạng thái</th>
+                      <th style="width: 180px;">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody id="vouchersBody"></tbody>
+                </table>
+              </div>
+              <div id="vouchersEmpty" class="text-muted text-center p-3 d-none">Chưa có voucher.</div>
             </div>
           </div>
         </div>
@@ -598,6 +759,31 @@
     </div>
   </div>
 
+  <div class="modal fade" id="repairRescheduleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Đề xuất ngày hẹn khác</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body">
+          <div id="repairRescheduleAlert" class="alert alert-danger d-none" role="alert"></div>
+          <input type="hidden" id="repairRescheduleAppointmentId" value="" />
+          <p class="small text-muted mb-2">Chọn nhiều ngày để khách chọn lại lịch. Tối đa 10 ngày.</p>
+          <div class="d-flex gap-2 mb-2">
+            <input id="repairRescheduleDateInput" type="date" class="form-control" />
+            <button type="button" class="btn btn-outline-primary" id="repairRescheduleAddDateBtn">Thêm ngày</button>
+          </div>
+          <div id="repairRescheduleDates" class="d-flex flex-wrap gap-2"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="button" class="btn btn-primary" id="repairRescheduleConfirmBtn">Gửi cho khách</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Chi tiết lịch sửa chữa (ảnh + mô tả đầy đủ) -->
   <div class="modal fade" id="repairDetailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
@@ -698,6 +884,15 @@
                 <textarea id="productDescription" class="form-control" rows="3" placeholder="Mô tả sản phẩm (tuỳ chọn)"></textarea>
               </div>
 
+              <div class="mt-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <label class="form-label fw-semibold mb-1">Đánh giá người dùng</label>
+                </div>
+                <div id="adminProductReviews" class="small text-muted border rounded p-2" style="max-height:220px; overflow:auto;">
+                  Chọn chi tiết sản phẩm để xem đánh giá.
+                </div>
+              </div>
+
               <div class="mt-2">
                 <label class="form-label fw-semibold">Tải ảnh mới (ảnh sẽ được cập nhật nếu chọn)</label>
                 <input id="productImageFile" type="file" class="form-control" accept="image/*" />
@@ -731,6 +926,7 @@
         customers: { title: "Quản lý khách hàng", subtitle: "Danh sách và thông tin khách hàng" },
         orders: { title: "Quản lý đơn hàng", subtitle: "Danh sách và trạng thái đơn hàng" },
         products: { title: "Quản lý sản phẩm", subtitle: "Sản phẩm và danh mục" },
+        vouchers: { title: "Quản lý voucher", subtitle: "Mã giảm giá và hiệu lực" },
         repairs: { title: "Lịch sửa chữa", subtitle: "Lịch hẹn và trạng thái sửa chữa" }
       };
 
@@ -764,6 +960,14 @@
       const repairCompleteCost = document.getElementById("repairCompleteCost");
       const repairCompleteAlert = document.getElementById("repairCompleteAlert");
       const repairCompleteConfirmBtn = document.getElementById("repairCompleteConfirmBtn");
+      const repairRescheduleModalEl = document.getElementById("repairRescheduleModal");
+      const repairRescheduleAppointmentId = document.getElementById("repairRescheduleAppointmentId");
+      const repairRescheduleDateInput = document.getElementById("repairRescheduleDateInput");
+      const repairRescheduleDates = document.getElementById("repairRescheduleDates");
+      const repairRescheduleAlert = document.getElementById("repairRescheduleAlert");
+      const repairRescheduleAddDateBtn = document.getElementById("repairRescheduleAddDateBtn");
+      const repairRescheduleConfirmBtn = document.getElementById("repairRescheduleConfirmBtn");
+      let repairRescheduleSelectedDates = [];
 
       const customerModalEl = document.getElementById("customerModal");
       const customerModalTitle = document.getElementById("customerModalTitle");
@@ -1028,6 +1232,13 @@
       let ordersActiveCache = [];
       let ordersHistoryCache = [];
       let dashboardHasLoaded = false;
+      let dashboardDataCache = {
+        customers: [],
+        orders: [],
+        products: [],
+        repairs: [],
+        oneStarReviews: [],
+      };
 
       function orderMatchesAdminSearch(o, q) {
         if (!q) return true;
@@ -1186,22 +1397,159 @@
         `;
       }
 
-      async function loadDashboardSummary() {
-        const alertEl = document.getElementById("dashboardAlert");
+      function renderDashboardOneStarAlerts(list) {
+        const host = document.getElementById("dashOneStarAlerts");
+        const countEl = document.getElementById("dashOneStarCount");
+        if (!host) return;
+        const alerts = Array.isArray(list) ? list : [];
+        if (countEl) countEl.textContent = String(alerts.length);
+        if (!alerts.length) {
+          host.innerHTML = `<div class="text-success">Không có đánh giá 1 sao chưa đọc.</div>`;
+          return;
+        }
+        host.innerHTML = alerts.map((r) => `
+          <div class="border rounded p-2 mb-2 bg-light">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div>
+                <div class="fw-semibold">${escapeCell(r.productName || "Sản phẩm")}</div>
+                <div class="small text-muted">${escapeCell(r.userName || "Khách hàng")} • ${new Date(r.createdAt || Date.now()).toLocaleString("vi-VN")}</div>
+                <div class="small mt-1">${escapeCell(r.comment || "")}</div>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-action="reviewRead" data-id="${r.id}">Đã đọc</button>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      function parseIsoToDate(value) {
+        if (!value) return null;
+        const d = new Date(value);
+        return Number.isNaN(d.getTime()) ? null : d;
+      }
+
+      function inSelectedPeriod(date, mode, controls) {
+        if (!date) return false;
+        const y = date.getFullYear();
+        const m = date.getMonth() + 1;
+        const d = date.getDate();
+        if (mode === "day") {
+          const raw = (controls.day?.value || "").trim();
+          if (!raw) return true;
+          const t = new Date(raw + "T00:00:00");
+          return y === t.getFullYear() && m === (t.getMonth() + 1) && d === t.getDate();
+        }
+        if (mode === "month") {
+          const raw = (controls.month?.value || "").trim();
+          if (!raw) return true;
+          const mm = raw.match(/^(\d{4})-(\d{2})$/);
+          if (!mm) return true;
+          return y === Number(mm[1]) && m === Number(mm[2]);
+        }
+        if (mode === "year") {
+          const raw = Number((controls.year?.value || "").trim());
+          if (!Number.isFinite(raw)) return true;
+          return y === raw;
+        }
+        if (mode === "range") {
+          const fromRaw = (controls.from?.value || "").trim();
+          const toRaw = (controls.to?.value || "").trim();
+          const from = fromRaw ? new Date(fromRaw + "T00:00:00") : null;
+          const to = toRaw ? new Date(toRaw + "T23:59:59") : null;
+          if (from && date < from) return false;
+          if (to && date > to) return false;
+          return true;
+        }
+        return true;
+      }
+
+      function updateDashboardMetricCards() {
         const customersCountEl = document.getElementById("dashCustomersCount");
         const openOrdersEl = document.getElementById("dashOpenOrdersCount");
         const productsCountEl = document.getElementById("dashProductsCount");
+        const soldProductsEl = document.getElementById("dashSoldProductsCount");
+        const cancelledProductsEl = document.getElementById("dashCancelledProductsCount");
         const completedRevenueEl = document.getElementById("dashCompletedRevenue");
+        const repairRevenueEl = document.getElementById("dashRepairRevenue");
+        const totalRevenueEl = document.getElementById("dashTotalRevenue");
         const visibleProductsHintEl = document.getElementById("dashVisibleProductsHint");
+
+        const presetEl = document.getElementById("dashRevenuePreset");
+        const controls = {
+          day: document.getElementById("dashRevenueDate"),
+          month: document.getElementById("dashRevenueMonth"),
+          year: document.getElementById("dashRevenueYear"),
+          from: document.getElementById("dashRevenueFrom"),
+          to: document.getElementById("dashRevenueTo"),
+        };
+        const mode = (presetEl?.value || "all").trim();
+
+        const customerList = dashboardDataCache.customers || [];
+        const orderList = dashboardDataCache.orders || [];
+        const productList = dashboardDataCache.products || [];
+        const repairList = dashboardDataCache.repairs || [];
+
+        const filteredOrders = orderList.filter((o) => inSelectedPeriod(parseIsoToDate(o?.createdAt), mode, controls));
+        const filteredRepairs = repairList.filter((r) => inSelectedPeriod(parseIsoToDate(r?.appointmentDate), mode, controls));
+
+        const openOrders = orderList.filter((o) => o?.status === "PENDING" || o?.status === "DELIVERING").length;
+        const visibleCount = productList.filter((p) => (p?.visibleForUser ?? true) === true).length;
+        const inProgressRepairs = repairList.filter((r) => ["PENDING", "CONFIRMED", "IN_PROGRESS"].includes(String(r?.status || ""))).length;
+
+        const deliveredRevenue = filteredOrders
+          .filter((o) => o?.status === "COMPLETED")
+          .reduce((sum, o) => sum + Number(o?.totalPrice || 0), 0);
+        const repairRevenue = filteredRepairs
+          .filter((r) => r?.status === "COMPLETED")
+          .reduce((sum, r) => sum + Number(r?.actualCost || 0), 0);
+        const soldProducts = filteredOrders
+          .filter((o) => o?.status === "COMPLETED")
+          .reduce((sum, o) => sum + (Array.isArray(o?.items) ? o.items.reduce((s, it) => s + Number(it?.quantity || 0), 0) : 0), 0);
+        const cancelledProducts = filteredOrders
+          .filter((o) => o?.status === "CANCELLED")
+          .reduce((sum, o) => sum + (Array.isArray(o?.items) ? o.items.reduce((s, it) => s + Number(it?.quantity || 0), 0) : 0), 0);
+
+        if (customersCountEl) customersCountEl.textContent = String(customerList.length);
+        if (openOrdersEl) openOrdersEl.textContent = String(openOrders);
+        if (productsCountEl) productsCountEl.textContent = String(productList.length);
+        if (soldProductsEl) soldProductsEl.textContent = String(soldProducts);
+        if (cancelledProductsEl) cancelledProductsEl.textContent = String(cancelledProducts);
+        if (completedRevenueEl) completedRevenueEl.textContent = formatVnd(deliveredRevenue);
+        if (repairRevenueEl) repairRevenueEl.textContent = formatVnd(repairRevenue);
+        if (totalRevenueEl) totalRevenueEl.textContent = formatVnd(deliveredRevenue + repairRevenue);
+        if (visibleProductsHintEl) {
+          visibleProductsHintEl.textContent = `${visibleCount} sản phẩm mở bán • ${inProgressRepairs} lịch sửa đang xử lý`;
+        }
+      }
+
+      function updateDashboardFilterControls() {
+        const mode = (document.getElementById("dashRevenuePreset")?.value || "all").trim();
+        const map = {
+          day: document.getElementById("dashFilterDayWrap"),
+          month: document.getElementById("dashFilterMonthWrap"),
+          year: document.getElementById("dashFilterYearWrap"),
+          from: document.getElementById("dashFilterFromWrap"),
+          to: document.getElementById("dashFilterToWrap"),
+        };
+        map.day?.classList.toggle("d-none", mode !== "day");
+        map.month?.classList.toggle("d-none", mode !== "month");
+        map.year?.classList.toggle("d-none", mode !== "year");
+        const showRange = mode === "range";
+        map.from?.classList.toggle("d-none", !showRange);
+        map.to?.classList.toggle("d-none", !showRange);
+      }
+
+      async function loadDashboardSummary() {
+        const alertEl = document.getElementById("dashboardAlert");
         if (alertEl) alertEl.classList.add("d-none");
 
         try {
-          const [customers, ordersActive, ordersHistory, products, repairs] = await Promise.all([
+          const [customers, ordersActive, ordersHistory, products, repairs, oneStarReviews] = await Promise.all([
             jsonFetch("/api/admin/customers", { method: "GET" }),
             jsonFetch("/api/admin/orders", { method: "GET" }),
             jsonFetch("/api/admin/orders/history", { method: "GET" }),
             jsonFetch("/api/admin/products", { method: "GET" }),
             jsonFetch("/api/admin/repair-appointments", { method: "GET" }),
+            jsonFetch("/api/admin/reviews/one-star-alerts", { method: "GET" }),
           ]);
 
           const customerList = Array.isArray(customers) ? customers : [];
@@ -1210,21 +1558,15 @@
           const allOrders = [...activeList, ...historyList];
           const productList = Array.isArray(products) ? products : [];
           const repairList = Array.isArray(repairs) ? repairs : [];
-
-          const openOrders = allOrders.filter((o) => o?.status === "PENDING" || o?.status === "DELIVERING").length;
-          const deliveredRevenue = allOrders
-            .filter((o) => o?.status === "COMPLETED")
-            .reduce((sum, o) => sum + Number(o?.totalPrice || 0), 0);
-          const visibleCount = productList.filter((p) => (p?.visibleForUser ?? true) === true).length;
-          const inProgressRepairs = repairList.filter((r) => ["PENDING", "CONFIRMED", "IN_PROGRESS"].includes(String(r?.status || ""))).length;
-
-          if (customersCountEl) customersCountEl.textContent = String(customerList.length);
-          if (openOrdersEl) openOrdersEl.textContent = String(openOrders);
-          if (productsCountEl) productsCountEl.textContent = String(productList.length);
-          if (completedRevenueEl) completedRevenueEl.textContent = formatVnd(deliveredRevenue);
-          if (visibleProductsHintEl) {
-            visibleProductsHintEl.textContent = `${visibleCount} sản phẩm mở bán • ${inProgressRepairs} lịch sửa đang xử lý`;
-          }
+          dashboardDataCache = {
+            customers: customerList,
+            orders: allOrders,
+            products: productList,
+            repairs: repairList,
+            oneStarReviews: Array.isArray(oneStarReviews) ? oneStarReviews : [],
+          };
+          updateDashboardMetricCards();
+          renderDashboardOneStarAlerts(dashboardDataCache.oneStarReviews);
 
           renderDashboardStatusBars(allOrders);
           renderDashboardLowStock(productList);
@@ -1293,9 +1635,11 @@
         actions += `<button class="btn btn-sm btn-outline-info me-1 mb-1" type="button" data-repair-action="detail" data-id="${r.id}">Chi tiết</button>`;
         if (st === "PENDING") {
           actions += `<button class="btn btn-sm btn-primary me-1 mb-1" type="button" data-repair-action="confirm" data-id="${r.id}">Xác nhận</button>`;
+          actions += `<button class="btn btn-sm btn-outline-primary me-1 mb-1" type="button" data-repair-action="reschedule" data-id="${r.id}">Hẹn ngày khác</button>`;
           actions += `<button class="btn btn-sm btn-outline-danger mb-1" type="button" data-repair-action="cancel" data-id="${r.id}">Hủy</button>`;
         } else if (st === "CONFIRMED") {
           actions += `<button class="btn btn-sm btn-primary me-1 mb-1" type="button" data-repair-action="inprogress" data-id="${r.id}">Máy đã đến</button>`;
+          actions += `<button class="btn btn-sm btn-outline-primary me-1 mb-1" type="button" data-repair-action="reschedule" data-id="${r.id}">Hẹn ngày khác</button>`;
           actions += `<button class="btn btn-sm btn-outline-danger mb-1" type="button" data-repair-action="cancel" data-id="${r.id}">Hủy</button>`;
         } else if (st === "IN_PROGRESS") {
           actions += `<button class="btn btn-sm btn-success me-1 mb-1" type="button" data-repair-action="complete" data-id="${r.id}">Hoàn thành</button>`;
@@ -1321,6 +1665,21 @@
           <td class="small">${actions || "—"}</td>
         `;
         tbody.appendChild(tr);
+      }
+
+      function renderRescheduleDates() {
+        if (!repairRescheduleDates) return;
+        repairRescheduleDates.innerHTML = "";
+        if (!repairRescheduleSelectedDates.length) {
+          repairRescheduleDates.innerHTML = `<span class="text-muted small">Chưa có ngày nào được chọn.</span>`;
+          return;
+        }
+        repairRescheduleSelectedDates.forEach((d) => {
+          const chip = document.createElement("span");
+          chip.className = "badge text-bg-light border";
+          chip.innerHTML = `${formatRepairDate(d)} <button type="button" class="btn btn-sm p-0 ms-1" data-remove-suggest-date="${d}" style="line-height:1;color:#6b7280;">&times;</button>`;
+          repairRescheduleDates.appendChild(chip);
+        });
       }
 
       function showAdminRepairDetail(r) {
@@ -1449,6 +1808,15 @@
             ordersEmpty.textContent = err.message || "Không thể tải danh sách đơn hàng.";
           });
         }
+        if (id === "vouchers") {
+          loadVouchers().catch((err) => {
+            const empty = document.getElementById("vouchersEmpty");
+            if (empty) {
+              empty.classList.remove("d-none");
+              empty.textContent = err.message || "Không tải được voucher.";
+            }
+          });
+        }
         if (id === "repairs") {
           loadRepairs().catch((err) => {
             if (repairsAlert) {
@@ -1471,12 +1839,28 @@
       });
 
       const hash = (location.hash || "#dashboard").replace("#", "") || "dashboard";
-      showSection(["dashboard", "customers", "orders", "products", "repairs"].includes(hash) ? hash : "dashboard");
+      showSection(["dashboard", "customers", "orders", "products", "vouchers", "repairs"].includes(hash) ? hash : "dashboard");
 
       document.getElementById("adminCustomersSearch")?.addEventListener("input", () => applyCustomerFilter());
       document.getElementById("adminOrdersSearch")?.addEventListener("input", () => applyOrdersFilter());
       document.getElementById("adminProductSearch")?.addEventListener("input", () => applyProductAdminFilter());
       document.getElementById("adminRepairsSearch")?.addEventListener("input", () => renderRepairsFiltered());
+      document.getElementById("dashRevenuePreset")?.addEventListener("change", () => {
+        updateDashboardFilterControls();
+        updateDashboardMetricCards();
+      });
+      document.getElementById("dashApplyRevenueFilterBtn")?.addEventListener("click", () => {
+        updateDashboardMetricCards();
+      });
+      document.getElementById("dashOneStarAlerts")?.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button[data-action='reviewRead']");
+        if (!btn) return;
+        const id = Number(btn.getAttribute("data-id"));
+        if (!id) return;
+        await jsonFetch(`/api/admin/reviews/${id}/mark-read`, { method: "PATCH" });
+        dashboardDataCache.oneStarReviews = (dashboardDataCache.oneStarReviews || []).filter((x) => Number(x.id) !== id);
+        renderDashboardOneStarAlerts(dashboardDataCache.oneStarReviews);
+      });
 
       document.getElementById("logoutBtn").addEventListener("click", function () {
         window.WinIStore.goToLogin();
@@ -1614,6 +1998,16 @@
               });
               await loadRepairs();
             }
+            if (action === "reschedule") {
+              const row = repairsListCache.find((x) => x.id === id);
+              repairRescheduleSelectedDates = Array.isArray(row?.suggestedDates) ? [...row.suggestedDates] : [];
+              if (repairRescheduleAppointmentId) repairRescheduleAppointmentId.value = String(id);
+              if (repairRescheduleDateInput) repairRescheduleDateInput.value = "";
+              repairRescheduleAlert?.classList.add("d-none");
+              renderRescheduleDates();
+              bootstrap.Modal.getOrCreateInstance(repairRescheduleModalEl).show();
+              return;
+            }
             if (action === "complete") {
               if (repairCompleteAppointmentId) repairCompleteAppointmentId.value = String(id);
               if (repairCompleteCost) repairCompleteCost.value = "";
@@ -1694,6 +2088,71 @@
         if (repairCompleteCost) repairCompleteCost.value = "";
         repairCompleteAlert?.classList.add("d-none");
       });
+
+      repairRescheduleAddDateBtn?.addEventListener("click", () => {
+        repairRescheduleAlert?.classList.add("d-none");
+        const value = (repairRescheduleDateInput?.value || "").trim();
+        if (!value) {
+          if (repairRescheduleAlert) {
+            repairRescheduleAlert.textContent = "Vui lòng chọn ngày.";
+            repairRescheduleAlert.classList.remove("d-none");
+          }
+          return;
+        }
+        if (!repairRescheduleSelectedDates.includes(value)) {
+          repairRescheduleSelectedDates.push(value);
+          repairRescheduleSelectedDates.sort();
+        }
+        if (repairRescheduleDateInput) repairRescheduleDateInput.value = "";
+        renderRescheduleDates();
+      });
+
+      repairRescheduleDates?.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-remove-suggest-date]");
+        if (!btn) return;
+        const d = btn.getAttribute("data-remove-suggest-date");
+        repairRescheduleSelectedDates = repairRescheduleSelectedDates.filter((x) => x !== d);
+        renderRescheduleDates();
+      });
+
+      repairRescheduleConfirmBtn?.addEventListener("click", async () => {
+        repairRescheduleAlert?.classList.add("d-none");
+        const id = Number(repairRescheduleAppointmentId && repairRescheduleAppointmentId.value);
+        if (!id || !repairRescheduleSelectedDates.length) {
+          if (repairRescheduleAlert) {
+            repairRescheduleAlert.textContent = "Cần chọn ít nhất 1 ngày hẹn khác.";
+            repairRescheduleAlert.classList.remove("d-none");
+          }
+          return;
+        }
+        repairRescheduleConfirmBtn.disabled = true;
+        try {
+          await jsonFetch(`/api/admin/repair-appointments/${id}/reschedule-options`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ suggestedDates: repairRescheduleSelectedDates })
+          });
+          const m = bootstrap.Modal.getInstance(repairRescheduleModalEl);
+          if (m) m.hide();
+          await loadRepairs();
+        } catch (err) {
+          if (repairRescheduleAlert) {
+            repairRescheduleAlert.textContent = err.message || "Không cập nhật được ngày hẹn.";
+            repairRescheduleAlert.classList.remove("d-none");
+          }
+        } finally {
+          repairRescheduleConfirmBtn.disabled = false;
+        }
+      });
+
+      repairRescheduleModalEl?.addEventListener("hidden.bs.modal", () => {
+        repairRescheduleSelectedDates = [];
+        repairRescheduleAlert?.classList.add("d-none");
+        if (repairRescheduleDateInput) repairRescheduleDateInput.value = "";
+        renderRescheduleDates();
+      });
+
+      updateDashboardFilterControls();
 
       customerSaveBtn.addEventListener("click", async () => {
         try {
@@ -1804,6 +2263,7 @@
       const productDescriptionEl = document.getElementById("productDescription");
       const productImageFileEl = document.getElementById("productImageFile");
       const productSaveBtn = document.getElementById("productSaveBtn");
+      const adminProductReviewsEl = document.getElementById("adminProductReviews");
 
       let productModalMode = "add"; // add | edit | details
       let selectedProductImageFile = null;
@@ -1939,6 +2399,9 @@
         productDescriptionEl.value = "";
         productImageFileEl.value = "";
         selectedProductImageFile = null;
+        if (adminProductReviewsEl) {
+          adminProductReviewsEl.innerHTML = "Chưa có đánh giá.";
+        }
         clearProductFormError();
       }
 
@@ -1961,7 +2424,34 @@
         if (p.categoryId != null) {
           productCategorySelectInModalEl.value = String(p.categoryId);
         }
+        if (adminProductReviewsEl) {
+          adminProductReviewsEl.innerHTML = "Đang tải đánh giá...";
+        }
         clearProductFormError();
+      }
+
+      async function loadAdminProductReviews(productId) {
+        if (!adminProductReviewsEl) return;
+        try {
+          const reviews = await jsonFetch(`/api/admin/products/${productId}/reviews`, { method: "GET" });
+          const list = Array.isArray(reviews) ? reviews : [];
+          if (!list.length) {
+            adminProductReviewsEl.innerHTML = `<div class="text-muted">Chưa có đánh giá nào.</div>`;
+            return;
+          }
+          adminProductReviewsEl.innerHTML = list.map((r) => `
+            <div class="border rounded p-2 mb-2 ${Number(r.rating) === 1 ? "border-danger bg-danger-subtle" : "bg-light"}">
+              <div class="d-flex justify-content-between">
+                <div class="fw-semibold">${escapeCell(r.userName || "Khách hàng")}</div>
+                <div class="small text-warning">${"★★★★★".slice(0, Number(r.rating || 0))}${"☆☆☆☆☆".slice(0, 5 - Number(r.rating || 0))}</div>
+              </div>
+              <div class="small text-muted">${new Date(r.createdAt || Date.now()).toLocaleString("vi-VN")}</div>
+              <div class="small mt-1">${escapeCell(r.comment || "")}</div>
+            </div>
+          `).join("");
+        } catch (err) {
+          adminProductReviewsEl.innerHTML = `<div class="text-danger">Không tải được đánh giá.</div>`;
+        }
       }
 
       function openProductModal() {
@@ -2065,6 +2555,7 @@
         // details | edit
         const detail = await jsonFetch(`/api/admin/products/${id}`, { method: "GET" });
         setModalForUpsert(detail);
+        await loadAdminProductReviews(id);
         openProductModal();
       });
 
@@ -2080,6 +2571,156 @@
           await loadProducts();
         });
       }
+
+      // =========================
+      // Quản lý voucher (admin)
+      // =========================
+      const vouchersBody = document.getElementById("vouchersBody");
+      const vouchersEmpty = document.getElementById("vouchersEmpty");
+      const voucherIdEl = document.getElementById("voucherId");
+      const voucherCodeEl = document.getElementById("voucherCode");
+      const voucherTypeEl = document.getElementById("voucherType");
+      const voucherValueEl = document.getElementById("voucherValue");
+      const voucherMinOrderEl = document.getElementById("voucherMinOrder");
+      const voucherActiveEl = document.getElementById("voucherActive");
+      const voucherStartAtEl = document.getElementById("voucherStartAt");
+      const voucherEndAtEl = document.getElementById("voucherEndAt");
+      const voucherSaveBtn = document.getElementById("voucherSaveBtn");
+      const voucherResetBtn = document.getElementById("voucherResetBtn");
+      const voucherFormAlert = document.getElementById("voucherFormAlert");
+      let vouchersCache = [];
+
+      function showVoucherFormError(msg) {
+        if (!voucherFormAlert) return;
+        voucherFormAlert.textContent = msg || "";
+        voucherFormAlert.classList.toggle("d-none", !msg);
+      }
+
+      function resetVoucherForm() {
+        if (voucherIdEl) voucherIdEl.value = "";
+        if (voucherCodeEl) voucherCodeEl.value = "";
+        if (voucherTypeEl) voucherTypeEl.value = "ORDER_FIXED";
+        if (voucherValueEl) voucherValueEl.value = "";
+        if (voucherMinOrderEl) voucherMinOrderEl.value = "0";
+        if (voucherActiveEl) voucherActiveEl.value = "true";
+        if (voucherStartAtEl) voucherStartAtEl.value = "";
+        if (voucherEndAtEl) voucherEndAtEl.value = "";
+        showVoucherFormError("");
+      }
+
+      function toDateTimeLocal(v) {
+        if (!v) return "";
+        const d = new Date(v);
+        if (Number.isNaN(d.getTime())) return "";
+        const pad = (n) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }
+
+      function renderVouchers(list) {
+        if (!vouchersBody || !vouchersEmpty) return;
+        vouchersBody.innerHTML = "";
+        if (!list || !list.length) {
+          vouchersEmpty.classList.remove("d-none");
+          return;
+        }
+        vouchersEmpty.classList.add("d-none");
+        vouchersBody.innerHTML = list.map((v) => `
+          <tr>
+            <td class="fw-semibold">${escapeCell(v.code || "")}</td>
+            <td>${escapeCell(v.discountType || "")}</td>
+            <td>${(v.discountType === "ORDER_PERCENT" || v.discountType === "SHIPPING_PERCENT")
+              ? `${Number(v.discountValue || 0)}%`
+              : formatVnd(v.discountValue || 0)}</td>
+            <td>${formatVnd(v.minOrderValue || 0)}</td>
+            <td class="small">${v.startAt ? toDateTimeLocal(v.startAt) : "—"} → ${v.endAt ? toDateTimeLocal(v.endAt) : "—"}</td>
+            <td>
+              ${v.status === "EXPIRED"
+                ? '<span class="badge text-bg-danger">Hết hạn</span>'
+                : (v.active ? '<span class="badge text-bg-success">Bật</span>' : '<span class="badge text-bg-secondary">Tắt</span>')}
+            </td>
+            <td>
+              <button class="btn btn-outline-secondary btn-sm me-1" type="button" data-action="editVoucher" data-id="${v.id}"><i class="bi bi-pencil-square"></i></button>
+              <button class="btn btn-outline-warning btn-sm me-1" type="button" data-action="toggleVoucher" data-id="${v.id}" ${v.status === "EXPIRED" ? "disabled" : ""}>
+                <i class="bi bi-power"></i>
+              </button>
+              <button class="btn btn-outline-danger btn-sm" type="button" data-action="deleteVoucher" data-id="${v.id}"><i class="bi bi-trash3"></i></button>
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      async function loadVouchers() {
+        vouchersCache = await jsonFetch("/api/admin/vouchers", { method: "GET" }) || [];
+        renderVouchers(vouchersCache);
+      }
+
+      voucherSaveBtn?.addEventListener("click", async () => {
+        showVoucherFormError("");
+        try {
+          const id = Number(voucherIdEl?.value || 0);
+          const payload = {
+            code: (voucherCodeEl?.value || "").trim(),
+            discountType: (voucherTypeEl?.value || "").trim(),
+            discountValue: Number(voucherValueEl?.value || 0),
+            minOrderValue: Number(voucherMinOrderEl?.value || 0),
+            active: (voucherActiveEl?.value || "true") === "true",
+            startAt: voucherStartAtEl?.value ? new Date(voucherStartAtEl.value).toISOString().slice(0, 19) : null,
+            endAt: voucherEndAtEl?.value ? new Date(voucherEndAtEl.value).toISOString().slice(0, 19) : null,
+          };
+          const url = id > 0 ? `/api/admin/vouchers/${id}` : "/api/admin/vouchers";
+          const method = id > 0 ? "PUT" : "POST";
+          await jsonFetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          resetVoucherForm();
+          await loadVouchers();
+        } catch (err) {
+          showVoucherFormError(err.message || "Không lưu được voucher.");
+        }
+      });
+
+      voucherResetBtn?.addEventListener("click", () => resetVoucherForm());
+
+      vouchersBody?.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button[data-action]");
+        if (!btn) return;
+        const id = Number(btn.getAttribute("data-id"));
+        if (!id) return;
+        const action = btn.getAttribute("data-action");
+        const row = vouchersCache.find((x) => Number(x.id) === id);
+        if (!row) return;
+        if (action === "editVoucher") {
+          voucherIdEl.value = String(row.id);
+          voucherCodeEl.value = row.code || "";
+          voucherTypeEl.value = row.discountType || "ORDER_FIXED";
+          voucherValueEl.value = row.discountValue != null ? String(row.discountValue) : "";
+          voucherMinOrderEl.value = row.minOrderValue != null ? String(row.minOrderValue) : "0";
+          voucherActiveEl.value = row.active ? "true" : "false";
+          voucherStartAtEl.value = toDateTimeLocal(row.startAt);
+          voucherEndAtEl.value = toDateTimeLocal(row.endAt);
+          showVoucherFormError("");
+          voucherCodeEl?.scrollIntoView({ behavior: "smooth", block: "center" });
+          voucherCodeEl?.focus();
+          return;
+        }
+        if (action === "toggleVoucher") {
+          const nextActive = !Boolean(row.active);
+          await jsonFetch(`/api/admin/vouchers/${id}/active`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ active: nextActive })
+          });
+          await loadVouchers();
+          return;
+        }
+        if (action === "deleteVoucher") {
+          if (!window.confirm("Bạn có chắc muốn xóa voucher này?")) return;
+          await jsonFetch(`/api/admin/vouchers/${id}`, { method: "DELETE" });
+          await loadVouchers();
+        }
+      });
 
       // chỉ load khi đang ở tab products (để tránh tốn request)
       document.addEventListener("shown.bs.tab", async () => {});

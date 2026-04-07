@@ -1,6 +1,7 @@
 package com.winistore.win.controller;
 
 import com.winistore.win.dto.repair.AdminRepairAppointmentResponse;
+import com.winistore.win.dto.repair.AdminRepairRescheduleRequest;
 import com.winistore.win.dto.repair.AdminRepairAppointmentUpdateRequest;
 import com.winistore.win.model.entity.RepairAppointment;
 import com.winistore.win.model.entity.RepairAppointmentImage;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -109,11 +112,37 @@ public class AdminRepairAppointmentController {
         return toAdminDto(r);
     }
 
+    @PatchMapping(value = "/{id}/reschedule-options", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public AdminRepairAppointmentResponse suggestDates(
+            @PathVariable Long id,
+            @RequestBody AdminRepairRescheduleRequest req
+    ) {
+        RepairAppointment r = repairAppointmentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch hẹn."));
+        if (r.getStatus() == RepairAppointmentStatus.COMPLETED || r.getStatus() == RepairAppointmentStatus.CANCELLED) {
+            throw new IllegalArgumentException("Không thể hẹn lại cho lịch đã hoàn thành hoặc đã hủy.");
+        }
+        List<LocalDate> dates = parseSuggestedDates(req == null ? null : req.suggestedDates());
+        if (dates.isEmpty()) {
+            throw new IllegalArgumentException("Cần chọn ít nhất 1 ngày hẹn khác.");
+        }
+        if (dates.size() > 10) {
+            throw new IllegalArgumentException("Tối đa 10 ngày đề xuất.");
+        }
+        r.setSuggestedDatesCsv(toCsv(dates));
+        r.setStatus(RepairAppointmentStatus.PENDING);
+        return toAdminDto(r);
+    }
+
     private AdminRepairAppointmentResponse toAdminDto(RepairAppointment r) {
         var u = r.getUser();
         List<String> urls = r.getImages() == null
                 ? List.of()
                 : r.getImages().stream().map(RepairAppointmentImage::getImageUrl).toList();
+        List<String> suggestedDates = parseSuggestedDatesCsv(r.getSuggestedDatesCsv()).stream()
+                .map(LocalDate::toString)
+                .toList();
         return new AdminRepairAppointmentResponse(
                 r.getId(),
                 u != null ? u.getId() : null,
@@ -125,8 +154,37 @@ public class AdminRepairAppointmentController {
                 r.getAppointmentDate(),
                 r.getStatus() != null ? r.getStatus().name() : null,
                 r.getActualCost(),
-                urls
+                urls,
+                suggestedDates
         );
+    }
+
+    private List<LocalDate> parseSuggestedDates(List<String> rawDates) {
+        if (rawDates == null) return List.of();
+        LocalDate today = LocalDate.now();
+        LinkedHashSet<LocalDate> unique = new LinkedHashSet<>();
+        for (String s : rawDates) {
+            if (s == null || s.isBlank()) continue;
+            try {
+                LocalDate d = LocalDate.parse(s.trim());
+                if (d.isBefore(today)) {
+                    throw new IllegalArgumentException("Ngày đề xuất phải từ hôm nay trở đi.");
+                }
+                unique.add(d);
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Ngày đề xuất không hợp lệ (yyyy-MM-dd).");
+            }
+        }
+        return unique.stream().sorted().toList();
+    }
+
+    private List<LocalDate> parseSuggestedDatesCsv(String csv) {
+        if (csv == null || csv.isBlank()) return List.of();
+        return parseSuggestedDates(List.of(csv.split(",")));
+    }
+
+    private String toCsv(List<LocalDate> dates) {
+        return dates.stream().map(LocalDate::toString).reduce((a, b) -> a + "," + b).orElse(null);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

@@ -15,6 +15,7 @@ public record AdminOrderResponse(
         BigDecimal totalPrice,
         Integer totalQuantity,
         List<AdminOrderItemResponse> items,
-        String customerNote
+        String customerNote,
+        String cancelReason
 ) {
 }

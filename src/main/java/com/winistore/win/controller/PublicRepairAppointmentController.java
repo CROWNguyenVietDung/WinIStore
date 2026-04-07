@@ -2,6 +2,7 @@ package com.winistore.win.controller;
 
 import com.winistore.win.dto.repair.RepairAppointmentDto;
 import com.winistore.win.dto.repair.RepairCancelRequest;
+import com.winistore.win.dto.repair.RepairChooseDateRequest;
 import com.winistore.win.model.entity.RepairAppointment;
 import com.winistore.win.model.entity.RepairAppointmentImage;
 import com.winistore.win.model.entity.User;
@@ -30,6 +31,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -141,6 +143,40 @@ public class PublicRepairAppointmentController {
         return toDto(r);
     }
 
+    @PostMapping(value = "/{id}/choose-date", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public RepairAppointmentDto chooseDate(@PathVariable Long id, @Valid @RequestBody RepairChooseDateRequest req) {
+        RepairAppointment r = repairAppointmentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch hẹn."));
+        if (!r.getUser().getId().equals(req.userId())) {
+            throw new IllegalArgumentException("Bạn không có quyền xác nhận lịch này.");
+        }
+        if (r.getStatus() != RepairAppointmentStatus.PENDING) {
+            throw new IllegalArgumentException("Chỉ có thể chọn ngày khi lịch đang chờ xác nhận.");
+        }
+
+        List<LocalDate> options = parseSuggestedDatesCsv(r.getSuggestedDatesCsv());
+        if (options.isEmpty()) {
+            throw new IllegalArgumentException("Lịch này chưa có ngày hẹn lại từ admin.");
+        }
+        if (req.selectedDate() == null || req.selectedDate().isBlank()) {
+            throw new IllegalArgumentException("Vui lòng chọn ngày hẹn.");
+        }
+        LocalDate selected;
+        try {
+            selected = LocalDate.parse(req.selectedDate().trim());
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Ngày đã chọn không hợp lệ (yyyy-MM-dd).");
+        }
+        if (!options.contains(selected)) {
+            throw new IllegalArgumentException("Ngày đã chọn không nằm trong danh sách admin đề xuất.");
+        }
+        r.setAppointmentDate(selected);
+        r.setStatus(RepairAppointmentStatus.CONFIRMED);
+        r.setSuggestedDatesCsv(null);
+        return toDto(r);
+    }
+
     private static String trimOrThrow(String raw, String fieldLabel) {
         if (raw == null) {
             throw new IllegalArgumentException(fieldLabel + " không được để trống.");
@@ -191,8 +227,27 @@ public class PublicRepairAppointmentController {
                 r.getAppointmentDate(),
                 r.getStatus() != null ? r.getStatus().name() : null,
                 r.getActualCost(),
-                urls
+                urls,
+                parseSuggestedDatesCsv(r.getSuggestedDatesCsv()).stream().map(LocalDate::toString).toList()
         );
+    }
+
+    private List<LocalDate> parseSuggestedDatesCsv(String csv) {
+        if (csv == null || csv.isBlank()) return List.of();
+        LocalDate today = LocalDate.now();
+        List<LocalDate> out = new ArrayList<>();
+        for (String raw : Arrays.asList(csv.split(","))) {
+            if (raw == null || raw.isBlank()) continue;
+            try {
+                LocalDate d = LocalDate.parse(raw.trim());
+                if (!d.isBefore(today) && !out.contains(d)) {
+                    out.add(d);
+                }
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+        out.sort(LocalDate::compareTo);
+        return out;
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

@@ -167,6 +167,42 @@
   <div id="ordersSuccessBanner" class="alert alert-success d-none" role="alert"></div>
   <div id="ordersAlert" class="alert alert-danger d-none" role="alert"></div>
 
+  <div id="cancelOrderPanel" class="card border-0 shadow-sm mb-4 d-none" style="border-radius:0.9rem;">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+        <div>
+          <h5 class="fw-bold mb-1">Hủy đơn hàng</h5>
+          <div id="cancelOrderMeta" class="small text-muted"></div>
+        </div>
+        <button id="cancelOrderCloseBtn" type="button" class="btn btn-sm btn-outline-secondary">Đóng</button>
+      </div>
+
+      <div id="cancelOrderItems" class="small mb-3"></div>
+
+      <div class="mb-2 fw-semibold">Chọn lý do hủy đơn</div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="cancelReasonOption" id="cancelReasonOption1" value="Tôi đặt nhầm sản phẩm">
+        <label class="form-check-label" for="cancelReasonOption1">Tôi đặt nhầm sản phẩm</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="cancelReasonOption" id="cancelReasonOption2" value="Tôi muốn thay đổi địa chỉ nhận hàng">
+        <label class="form-check-label" for="cancelReasonOption2">Tôi muốn thay đổi địa chỉ nhận hàng</label>
+      </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="radio" name="cancelReasonOption" id="cancelReasonOption3" value="Tôi tìm thấy giá tốt hơn ở nơi khác">
+        <label class="form-check-label" for="cancelReasonOption3">Tôi tìm thấy giá tốt hơn ở nơi khác</label>
+      </div>
+
+      <label for="cancelReasonOther" class="form-label fw-semibold">Lý do khác</label>
+      <textarea id="cancelReasonOther" class="form-control" rows="3" maxlength="500" placeholder="Nhập lý do khác của bạn..."></textarea>
+      <div class="small text-muted mt-1">Bạn có thể chọn một lý do có sẵn hoặc nhập lý do khác.</div>
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <button id="cancelOrderSubmitBtn" type="button" class="btn btn-danger">Xác nhận hủy đơn</button>
+      </div>
+    </div>
+  </div>
+
   <h4 class="fw-bold mb-2">Đơn hàng của tôi</h4>
 
   <section class="mb-4">

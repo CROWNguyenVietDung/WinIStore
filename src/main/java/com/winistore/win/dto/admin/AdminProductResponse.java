@@ -1,5 +1,7 @@
 package com.winistore.win.dto.admin;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 
 public record AdminProductResponse(
@@ -8,7 +10,7 @@ public record AdminProductResponse(
         BigDecimal price,
         Integer discountPercent,
         Integer stockQuantity,
-        String imageUrl,
+        @JsonProperty("imageUrl") String image,
         Long categoryId,
         String categoryName,
         String categoryType,

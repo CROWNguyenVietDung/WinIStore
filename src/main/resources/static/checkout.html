@@ -200,6 +200,10 @@
             <span class="text-muted">Phí vận chuyển</span>
             <span class="fw-semibold" id="coShipping">—</span>
           </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Giảm giá voucher</span>
+            <span class="fw-semibold text-success" id="coDiscount">—</span>
+          </div>
           <div class="d-flex justify-content-between fs-5 mt-2">
             <span class="fw-bold">Tổng thanh toán</span>
             <span class="fw-bold text-danger" id="coTotal">—</span>
@@ -247,6 +251,17 @@
             </div>
             <button type="button" class="btn btn-primary btn-sm" id="btnSaveNewAddress">Lưu vào sổ địa chỉ</button>
           </div>
+        </div>
+      </div>
+
+      <div class="card slip-card shadow-sm mb-3">
+        <div class="card-body p-4">
+          <h5 class="mb-2">Mã giảm giá</h5>
+          <div class="input-group mb-2">
+            <input id="voucherCodeInput" type="text" class="form-control" placeholder="Nhập mã voucher (VD: SINHVIEN)">
+            <button class="btn btn-outline-primary" type="button" id="btnApplyVoucher">Áp mã</button>
+          </div>
+          <div id="voucherHint" class="small text-muted">Chưa áp mã.</div>
         </div>
       </div>
 

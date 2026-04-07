@@ -2,6 +2,7 @@ package com.winistore.win.controller;
 
 import com.winistore.win.dto.order.CreateOrderRequest;
 import com.winistore.win.dto.order.CreateOrderResponse;
+import com.winistore.win.dto.order.CustomerCancelOrderRequest;
 import com.winistore.win.dto.order.OrderSummaryDto;
 import com.winistore.win.model.entity.Order;
 import com.winistore.win.repository.OrderRepository;
@@ -49,6 +50,16 @@ public class PublicOrderController {
     @Transactional
     public CreateOrderResponse create(@RequestBody CreateOrderRequest req) {
         return orderPlacementService.placeOrder(req);
+    }
+
+    @PostMapping(path = "/{id}/cancel", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public OrderSummaryDto cancelByCustomer(@PathVariable Long id, @RequestBody CustomerCancelOrderRequest req) {
+        if (req == null) {
+            throw new IllegalArgumentException("Thiếu thông tin hủy đơn hàng");
+        }
+        Order cancelled = orderPlacementService.cancelByCustomer(id, req.userId(), req.reason());
+        return toSummary(cancelled);
     }
 
     private OrderSummaryDto toSummary(Order o) {

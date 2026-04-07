@@ -1,5 +1,7 @@
 package com.winistore.win.dto.product;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 
 public record ProductDetailDto(
@@ -9,7 +11,7 @@ public record ProductDetailDto(
         Integer discountPercent,
         Integer stockQuantity,
         Integer soldQuantity,
-        String imageUrl,
+        @JsonProperty("imageUrl") String image,
         Long categoryId,
         String categoryName,
         String categoryType,

@@ -102,7 +102,7 @@ public class AdminProductController {
             throw new IllegalArgumentException("Danh mục dịch vụ sửa chữa đã bị loại bỏ.");
         }
 
-        String imageUrl = saveImage(image);
+        String savedImage = saveImage(image);
 
         Product p = Product.builder()
                 .name(name)
@@ -110,7 +110,7 @@ public class AdminProductController {
                 .price(price)
                 .discountPercent(normalizeDiscountPercent(discountPercent))
                 .stockQuantity(stockQuantity)
-                .imageUrl(imageUrl)
+                .image(savedImage)
                 .description(description)
                 .visibleForUser(visibleForUser)
                 .build();
@@ -150,7 +150,7 @@ public class AdminProductController {
         p.setVisibleForUser(visibleForUser);
 
         if (image != null && !image.isEmpty()) {
-            p.setImageUrl(saveImage(image));
+            p.setImage(saveImage(image));
         }
 
         Product saved = productRepository.save(p);
@@ -195,7 +195,7 @@ public class AdminProductController {
                 p.getPrice(),
                 normalizeDiscountPercent(p.getDiscountPercent()),
                 p.getStockQuantity(),
-                p.getImageUrl(),
+                p.getImage(),
                 c != null ? c.getId() : null,
                 c != null ? c.getName() : null,
                 c != null ? c.getType() : null,

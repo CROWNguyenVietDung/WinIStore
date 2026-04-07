@@ -62,6 +62,25 @@
       st === "PENDING"
         ? `<button type="button" class="btn btn-outline-danger btn-sm mt-2 me-1" data-cancel-id="${r.id}">Hủy lịch</button>`
         : "";
+    const options = Array.isArray(r.suggestedDates) ? r.suggestedDates : [];
+    const rescheduleBox =
+      st === "PENDING" && options.length
+        ? `
+          <div class="mt-2 p-2 border rounded bg-light">
+            <div class="small fw-semibold mb-1">Admin đề xuất ngày khác</div>
+            <div class="d-flex flex-wrap gap-1 mb-2">
+              ${options.map((d) => `<span class="badge text-bg-light border">${fmtDateOnly(d)}</span>`).join("")}
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              <select class="form-select form-select-sm" style="max-width:260px" data-choose-date-select="${r.id}">
+                <option value="">Chọn ngày bạn muốn hẹn</option>
+                ${options.map((d) => `<option value="${d}">${fmtDateOnly(d)}</option>`).join("")}
+              </select>
+              <button type="button" class="btn btn-sm btn-primary" data-choose-date-id="${r.id}">Xác nhận ngày</button>
+            </div>
+          </div>
+        `
+        : "";
     const detailBtn = `<button type="button" class="btn btn-outline-primary btn-sm mt-2" data-detail-id="${r.id}">Xem chi tiết</button>`;
     const thumbCount = Array.isArray(r.imageUrls) ? r.imageUrls.length : 0;
     const thumbs =
@@ -87,6 +106,7 @@
           <div class="mt-2 small text-secondary text-truncate" style="max-width:100%">${escapeHtml(r.issueDescription || "")}</div>
           ${thumbs}
           ${cost}
+          ${rescheduleBox}
           <div class="d-flex flex-wrap gap-1">${cancelBtn}${detailBtn}</div>
         </div>
       </div>
@@ -194,16 +214,43 @@
       }
 
       const btn = e.target.closest("button[data-cancel-id]");
-      if (!btn) return;
-      const id = Number(btn.getAttribute("data-cancel-id"));
-      if (!id || !window.confirm("Bạn có chắc muốn hủy lịch này?")) return;
+      if (btn) {
+        const id = Number(btn.getAttribute("data-cancel-id"));
+        if (!id || !window.confirm("Bạn có chắc muốn hủy lịch này?")) return;
+        alertEl?.classList.add("d-none");
+        try {
+          await apiPost(`${API}/${id}/cancel`, { userId: user.id });
+          await loadList(user, activeEl, historyEl, emptyEl, activeHint, historyHint, alertEl);
+        } catch (err) {
+          if (alertEl) {
+            alertEl.textContent = err?.message || "Không hủy được lịch.";
+            alertEl.classList.remove("d-none");
+          }
+        }
+        return;
+      }
+
+      const chooseBtn = e.target.closest("button[data-choose-date-id]");
+      if (!chooseBtn) return;
+      const id = Number(chooseBtn.getAttribute("data-choose-date-id"));
+      if (!id) return;
+      const select = root.querySelector(`select[data-choose-date-select='${id}']`);
+      const selectedDate = (select && select.value ? String(select.value).trim() : "");
+      if (!selectedDate) {
+        if (alertEl) {
+          alertEl.textContent = "Vui lòng chọn ngày hẹn.";
+          alertEl.classList.remove("d-none");
+        }
+        return;
+      }
+      if (!window.confirm("Xác nhận ngày hẹn này?")) return;
       alertEl?.classList.add("d-none");
       try {
-        await apiPost(`${API}/${id}/cancel`, { userId: user.id });
+        await apiPost(`${API}/${id}/choose-date`, { userId: user.id, selectedDate });
         await loadList(user, activeEl, historyEl, emptyEl, activeHint, historyHint, alertEl);
       } catch (err) {
         if (alertEl) {
-          alertEl.textContent = err?.message || "Không hủy được lịch.";
+          alertEl.textContent = err?.message || "Không xác nhận được ngày hẹn.";
           alertEl.classList.remove("d-none");
         }
       }

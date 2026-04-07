@@ -170,11 +170,12 @@ public class PublicProductController {
         return new ProductCardDto(
                 p.getId(),
                 p.getName(),
+                p.getDescription(),
                 p.getPrice(),
                 normalizeDiscountPercent(p.getDiscountPercent()),
                 p.getStockQuantity(),
                 p.getSoldQuantity() == null ? 0 : p.getSoldQuantity(),
-                p.getImageUrl(),
+                p.getImage(),
                 c != null ? c.getId() : null,
                 c != null ? c.getName() : null,
                 c != null ? c.getType() : null
@@ -233,7 +234,7 @@ public class PublicProductController {
                 normalizeDiscountPercent(p.getDiscountPercent()),
                 p.getStockQuantity(),
                 p.getSoldQuantity() == null ? 0 : p.getSoldQuantity(),
-                p.getImageUrl(),
+                p.getImage(),
                 c != null ? c.getId() : null,
                 c != null ? c.getName() : null,
                 c != null ? c.getType() : null,

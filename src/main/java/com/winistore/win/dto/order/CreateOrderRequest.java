@@ -10,7 +10,8 @@ public record CreateOrderRequest(
         String recipientName,
         String recipientPhone,
         String shippingAddress,
-        String customerNote
+        String customerNote,
+        String voucherCode
 ) {
     public record CreateOrderItem(
             Long productId,

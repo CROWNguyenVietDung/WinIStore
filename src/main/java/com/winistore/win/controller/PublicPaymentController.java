@@ -4,6 +4,7 @@ import com.winistore.win.dto.order.CreateOrderRequest;
 import com.winistore.win.dto.payment.VnpayCreatePaymentResponse;
 import com.winistore.win.service.VnpayService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,9 @@ import java.util.Map;
 public class PublicPaymentController {
     private final VnpayService vnpayService;
 
+    @Value("${payment.vnpay.frontend-return-url:/vnpay-return.html}")
+    private String frontendReturnUrl;
+
     public PublicPaymentController(VnpayService vnpayService) {
         this.vnpayService = vnpayService;
     }
@@ -36,7 +40,7 @@ public class PublicPaymentController {
 
     @GetMapping("/return")
     public RedirectView paymentReturn(@RequestParam Map<String, String> params) {
-        String redirectBase = "/vnpay-return.html";
+        String redirectBase = frontendReturnUrl;
         String txnRef = params.getOrDefault("vnp_TxnRef", "");
         if (!vnpayService.isValidSignature(params)) {
             return new RedirectView(redirectBase + "?success=0&message=" + enc("Chữ ký VNPay không hợp lệ"));

@@ -55,6 +55,10 @@
     const itemsHtml = items.length
       ? items.map((it) => `<div class="small">- ${it.productName || "Sản phẩm"} x ${it.quantity || 0}</div>`).join("")
       : `<div class="small text-muted">Chưa có dữ liệu chi tiết sản phẩm.</div>`;
+    const canCancel = st === "PENDING";
+    const actionHtml = canCancel
+      ? `<button class="btn btn-sm btn-outline-danger js-cancel-order" data-order-id="${o.id}">Hủy đơn</button>`
+      : "";
     return `
       <div class="card border-0 shadow-sm" style="border-radius:0.9rem;">
         <div class="card-body">
@@ -78,6 +82,7 @@
             <div><span class="text-muted">Địa chỉ:</span> ${o.shippingAddress || "—"}</div>
             ${o.customerNote ? `<div class="mt-2"><span class="text-muted">Ghi chú:</span> ${escapeHtml(o.customerNote)}</div>` : ""}
           </div>
+          ${actionHtml ? `<div class="mt-3 d-flex justify-content-end">${actionHtml}</div>` : ""}
         </div>
       </div>
     `;
@@ -105,13 +110,22 @@
     const historyList = document.getElementById("historyOrdersList");
     const emptyEl = document.getElementById("ordersEmpty");
     const alertEl = document.getElementById("ordersAlert");
+    const cancelPanel = document.getElementById("cancelOrderPanel");
+    const cancelMetaEl = document.getElementById("cancelOrderMeta");
+    const cancelItemsEl = document.getElementById("cancelOrderItems");
+    const cancelOtherEl = document.getElementById("cancelReasonOther");
+    const cancelSubmitBtn = document.getElementById("cancelOrderSubmitBtn");
+    const cancelCloseBtn = document.getElementById("cancelOrderCloseBtn");
+    let selectedCancelOrder = null;
+    let orderMap = new Map();
 
-    try {
+    const renderOrders = async () => {
       const res = await fetch(`${API_ORDERS}/by-user/${user.id}`, { method: "GET" });
       const ct = res.headers.get("content-type") || "";
       const data = ct.includes("application/json") ? await res.json() : null;
       if (!res.ok) throw new Error((data && data.message) || `HTTP ${res.status}`);
       const list = Array.isArray(data) ? data : [];
+      orderMap = new Map(list.map((o) => [Number(o.id), o]));
 
       if (!activeList || !historyList) return;
       activeList.innerHTML = "";
@@ -132,11 +146,94 @@
       historyList.innerHTML = history.length
         ? history.map(buildOrderCard).join("")
         : `<div class="text-muted">Chưa có lịch sử nhận hàng.</div>`;
+    };
+
+    try {
+      await renderOrders();
     } catch (e) {
       if (alertEl) {
         alertEl.textContent = e?.message || "Không tải được danh sách đơn.";
         alertEl.classList.remove("d-none");
       }
     }
+
+    document.addEventListener("click", async (evt) => {
+      const btn = evt.target.closest(".js-cancel-order");
+      if (!btn) return;
+      const orderId = Number(btn.getAttribute("data-order-id"));
+      if (!orderId) return;
+      const order = orderMap.get(orderId);
+      if (!order) return;
+
+      selectedCancelOrder = order;
+      if (cancelMetaEl) {
+        cancelMetaEl.textContent = `Đơn #${order.id} - ${fmtDate(order.createdAt)} - ${fmtVnd(order.totalPrice)}`;
+      }
+      if (cancelItemsEl) {
+        const items = Array.isArray(order.items) ? order.items : [];
+        cancelItemsEl.innerHTML = items.length
+          ? items.map((it) => `<div>- ${escapeHtml(it.productName || "Sản phẩm")} x ${it.quantity || 0}</div>`).join("")
+          : `<div class="text-muted">Không có dữ liệu sản phẩm.</div>`;
+      }
+      document.querySelectorAll("input[name='cancelReasonOption']").forEach((r) => {
+        r.checked = false;
+      });
+      if (cancelOtherEl) cancelOtherEl.value = "";
+      cancelPanel?.classList.remove("d-none");
+      cancelPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    cancelCloseBtn?.addEventListener("click", () => {
+      selectedCancelOrder = null;
+      cancelPanel?.classList.add("d-none");
+    });
+
+    cancelSubmitBtn?.addEventListener("click", async () => {
+      if (!selectedCancelOrder) return;
+      const selected = document.querySelector("input[name='cancelReasonOption']:checked");
+      const selectedReason = selected ? String(selected.value || "").trim() : "";
+      const otherReason = String(cancelOtherEl?.value || "").trim();
+      const reason = otherReason || selectedReason;
+
+      if (!reason) {
+        if (alertEl) {
+          alertEl.textContent = "Vui lòng chọn hoặc nhập lý do hủy đơn hàng.";
+          alertEl.classList.remove("d-none");
+        }
+        return;
+      }
+      if (!window.confirm(`Bạn chắc chắn muốn hủy đơn #${selectedCancelOrder.id}?`)) {
+        return;
+      }
+
+      try {
+        cancelSubmitBtn.disabled = true;
+        const res = await fetch(`${API_ORDERS}/${selectedCancelOrder.id}/cancel`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user.id, reason }),
+        });
+        const ct = res.headers.get("content-type") || "";
+        const data = ct.includes("application/json") ? await res.json() : null;
+        if (!res.ok) throw new Error((data && data.message) || `HTTP ${res.status}`);
+
+        if (banner) {
+          banner.textContent = "Hủy đơn hàng thành công.";
+          banner.classList.remove("d-none");
+          window.setTimeout(() => banner.classList.add("d-none"), 2200);
+        }
+        alertEl?.classList.add("d-none");
+        selectedCancelOrder = null;
+        cancelPanel?.classList.add("d-none");
+        await renderOrders();
+      } catch (e) {
+        if (alertEl) {
+          alertEl.textContent = e?.message || "Không thể hủy đơn hàng.";
+          alertEl.classList.remove("d-none");
+        }
+      } finally {
+        cancelSubmitBtn.disabled = false;
+      }
+    });
   });
 })();

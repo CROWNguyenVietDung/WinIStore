@@ -1,9 +1,12 @@
 (() => {
+  const PAGE_SIZE = 8;
   const API_HOME = "/api/public/products/home";
   const API_BY_CATEGORY = "/api/public/products/by-category";
   const API_BY_TYPE = "/api/public/products/by-type";
   const API_PROMOTIONS = "/api/public/products/promotions";
   const API_SEARCH = "/api/public/products/search";
+  const API_REVIEW_SUMMARY = "/api/public/products/review-summary";
+  let reviewSummaryMap = new Map();
 
   const els = {
     homeFilterCard: () => document.getElementById("homeFilterCard"),
@@ -19,6 +22,18 @@
     sectionPhones: () => document.getElementById("sectionPhones"),
     sectionAccessories: () => document.getElementById("sectionAccessories"),
     sectionUsed: () => document.getElementById("sectionUsed"),
+    phonesLoadMoreWrap: () => document.getElementById("phonesLoadMoreWrap"),
+    accessoriesLoadMoreWrap: () => document.getElementById("accessoriesLoadMoreWrap"),
+    usedLoadMoreWrap: () => document.getElementById("usedLoadMoreWrap"),
+    phonesLoadMoreBtn: () => document.getElementById("phonesLoadMoreBtn"),
+    accessoriesLoadMoreBtn: () => document.getElementById("accessoriesLoadMoreBtn"),
+    usedLoadMoreBtn: () => document.getElementById("usedLoadMoreBtn"),
+  };
+
+  const sectionState = {
+    phones: { list: [], visibleCount: 0 },
+    accessories: { list: [], visibleCount: 0 },
+    used: { list: [], visibleCount: 0 },
   };
 
   const fmtVnd = (n) => {
@@ -46,8 +61,17 @@
     if (type) params.set("type", type);
     if (min != null) params.set("minPrice", String(Math.max(0, Math.floor(min))));
     if (max != null) params.set("maxPrice", String(Math.max(0, Math.floor(max))));
-    params.set("limit", "12");
+    params.set("limit", "60");
     return params.toString();
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function getModeFromUrl() {
@@ -107,6 +131,14 @@
           : `<span class="badge text-bg-secondary">Hết hàng</span>`;
 
     const pid = p?.id != null ? String(p.id) : "";
+    const summary = reviewSummaryMap.get(Number(pid)) || { avgRating: 5, reviewCount: 0 };
+    const avg = Number(summary.avgRating || 5).toFixed(1);
+    const reviewCount = Number(summary.reviewCount || 0);
+    const safeName = escapeHtml(p?.name || "—");
+    const descriptionHtml = escapeHtml(p?.description || "Mô tả sản phẩm đang được cập nhật.")
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      .replace(/\n/g, "<br>");
     return `
       <div class="col-6 col-md-4 col-lg-3">
         <div class="product-card h-100">
@@ -115,10 +147,13 @@
             <i class="bi bi-cart-plus"></i>
           </button>
           <a class="text-decoration-none text-dark d-block" href="./product.html?id=${encodeURIComponent(pid)}">
-            <img class="product-img" src="${img}" alt="${(p?.name || "").replace(/"/g, "&quot;")}">
+            <img class="product-img" src="${img}" alt="${safeName}">
             <div class="p-3">
-              <div class="fw-semibold mb-1" style="min-height: 40px;">
-                ${p?.name || "—"}
+              <div class="fw-semibold mb-1 product-name">
+                ${safeName}
+              </div>
+              <div class="product-desc mb-2">
+                ${descriptionHtml}
               </div>
               <div class="d-flex align-items-center justify-content-between">
                 ${priceHtml}
@@ -126,6 +161,8 @@
               </div>
               <div class="mt-2">
                 <span class="sold-badge">Đã bán ${sold}</span>
+                <span class="ms-2 small text-warning fw-semibold">★ ${avg}</span>
+                <span class="small text-muted">/ ${reviewCount} đánh giá</span>
               </div>
             </div>
           </a>
@@ -134,13 +171,70 @@
     `;
   }
 
-  function renderList(gridEl, list) {
-    if (!gridEl) return;
-    if (!Array.isArray(list) || list.length === 0) {
+  async function loadReviewSummaryForProducts(list) {
+    const ids = (list || []).map((p) => Number(p?.id || 0)).filter((x) => Number.isFinite(x) && x > 0);
+    if (!ids.length) return;
+    const params = new URLSearchParams();
+    ids.forEach((id) => params.append("ids", String(id)));
+    try {
+      const res = await fetch(`${API_REVIEW_SUMMARY}?${params}`, { method: "GET" });
+      const ct = res.headers.get("content-type") || "";
+      const data = ct.includes("application/json") ? await res.json() : null;
+      if (!res.ok) return;
+      const arr = Array.isArray(data) ? data : [];
+      arr.forEach((x) => {
+        reviewSummaryMap.set(Number(x.productId), {
+          avgRating: x.avgRating == null ? 5 : Number(x.avgRating),
+          reviewCount: x.reviewCount == null ? 0 : Number(x.reviewCount),
+        });
+      });
+    } catch {
+      // ignore
+    }
+  }
+
+  function getSectionRefs(key) {
+    if (key === "accessories") {
+      return { gridEl: els.accessoriesGrid(), wrapEl: els.accessoriesLoadMoreWrap() };
+    }
+    if (key === "used") {
+      return { gridEl: els.usedGrid(), wrapEl: els.usedLoadMoreWrap() };
+    }
+    return { gridEl: els.phonesGrid(), wrapEl: els.phonesLoadMoreWrap() };
+  }
+
+  function updateLoadMoreVisibility(key) {
+    const state = sectionState[key];
+    const { wrapEl } = getSectionRefs(key);
+    if (!wrapEl || !state) return;
+    const hasMore = state.visibleCount < state.list.length;
+    wrapEl.classList.toggle("d-none", !hasMore);
+  }
+
+  function renderSection(key, list) {
+    const state = sectionState[key];
+    const { gridEl } = getSectionRefs(key);
+    if (!gridEl || !state) return;
+    state.list = Array.isArray(list) ? list : [];
+    state.visibleCount = Math.min(PAGE_SIZE, state.list.length);
+
+    if (state.list.length === 0) {
       gridEl.innerHTML = `<div class="col-12"><div class="text-muted">Chưa có sản phẩm.</div></div>`;
+      updateLoadMoreVisibility(key);
       return;
     }
-    gridEl.innerHTML = list.map(cardHtml).join("");
+
+    gridEl.innerHTML = state.list.slice(0, state.visibleCount).map(cardHtml).join("");
+    updateLoadMoreVisibility(key);
+  }
+
+  function loadMoreSection(key) {
+    const state = sectionState[key];
+    const { gridEl } = getSectionRefs(key);
+    if (!gridEl || !state || !state.list.length) return;
+    state.visibleCount = Math.min(state.visibleCount + PAGE_SIZE, state.list.length);
+    gridEl.innerHTML = state.list.slice(0, state.visibleCount).map(cardHtml).join("");
+    updateLoadMoreVisibility(key);
   }
 
   function setSectionVisible(sectionEl, visible) {
@@ -169,7 +263,7 @@
     showAlert("");
     const params = new URLSearchParams();
     params.set("categoryName", categoryName);
-    params.set("limit", "24");
+    params.set("limit", "60");
 
     const res = await fetch(`${API_BY_CATEGORY}?${params}`, { method: "GET" });
     const contentType = res.headers.get("content-type") || "";
@@ -187,7 +281,7 @@
     showAlert("");
     const params = new URLSearchParams();
     params.set("type", type);
-    params.set("limit", "24");
+    params.set("limit", "60");
 
     const res = await fetch(`${API_BY_TYPE}?${params}`, { method: "GET" });
     const contentType = res.headers.get("content-type") || "";
@@ -205,7 +299,7 @@
     showAlert("");
     const params = new URLSearchParams();
     params.set("q", keyword);
-    params.set("limit", "48");
+    params.set("limit", "60");
 
     const res = await fetch(`${API_SEARCH}?${params}`, { method: "GET" });
     const contentType = res.headers.get("content-type") || "";
@@ -222,7 +316,7 @@
   async function loadPromotions() {
     showAlert("");
     const params = new URLSearchParams();
-    params.set("limit", "24");
+    params.set("limit", "60");
 
     const res = await fetch(`${API_PROMOTIONS}?${params}`, { method: "GET" });
     const contentType = res.headers.get("content-type") || "";
@@ -256,6 +350,7 @@
   async function refreshHome() {
     try {
       const data = await loadHomeProducts();
+      await loadReviewSummaryForProducts([...(data?.phones || []), ...(data?.accessories || []), ...(data?.usedMachines || [])]);
 
       const type = els.filterType()?.value || "";
       const showPhones = !type || type === "PHONE";
@@ -266,14 +361,14 @@
       setSectionVisible(els.sectionAccessories(), showAccessories);
       setSectionVisible(els.sectionUsed(), showUsed);
 
-      renderList(els.phonesGrid(), data?.phones || []);
-      renderList(els.accessoriesGrid(), data?.accessories || []);
-      renderList(els.usedGrid(), data?.usedMachines || []);
+      renderSection("phones", data?.phones || []);
+      renderSection("accessories", data?.accessories || []);
+      renderSection("used", data?.usedMachines || []);
     } catch (e) {
       showAlert(e?.message || "Có lỗi khi tải sản phẩm.");
-      renderList(els.phonesGrid(), []);
-      renderList(els.accessoriesGrid(), []);
-      renderList(els.usedGrid(), []);
+      renderSection("phones", []);
+      renderSection("accessories", []);
+      renderSection("used", []);
     }
   }
 
@@ -302,11 +397,16 @@
         : mode.isCategoryMode
           ? await loadProductsByCategory(mode.categoryName)
           : await loadProductsByType(mode.type);
+      await loadReviewSummaryForProducts(list);
 
-      renderList(els.phonesGrid(), list);
+      renderSection("phones", list);
+      renderSection("accessories", []);
+      renderSection("used", []);
     } catch (e) {
       showAlert(e?.message || "Có lỗi khi tải sản phẩm.");
-      renderList(els.phonesGrid(), []);
+      renderSection("phones", []);
+      renderSection("accessories", []);
+      renderSection("used", []);
     }
   }
 
@@ -321,13 +421,18 @@
 
     try {
       const list = await loadSearchResults(mode.searchQ);
-      renderList(els.phonesGrid(), list);
+      await loadReviewSummaryForProducts(list);
+      renderSection("phones", list);
+      renderSection("accessories", []);
+      renderSection("used", []);
       if (!list.length) {
         showAlert("Không tìm thấy sản phẩm đang mở bán phù hợp.");
       }
     } catch (e) {
       showAlert(e?.message || "Có lỗi khi tìm kiếm.");
-      renderList(els.phonesGrid(), []);
+      renderSection("phones", []);
+      renderSection("accessories", []);
+      renderSection("used", []);
     }
   }
 
@@ -354,6 +459,9 @@
       });
     });
     els.filterType()?.addEventListener("change", refreshHome);
+    els.phonesLoadMoreBtn()?.addEventListener("click", () => loadMoreSection("phones"));
+    els.accessoriesLoadMoreBtn()?.addEventListener("click", () => loadMoreSection("accessories"));
+    els.usedLoadMoreBtn()?.addEventListener("click", () => loadMoreSection("used"));
   }
 
   function getCart() {

@@ -2,6 +2,7 @@
   const API_BY_IDS = "/api/public/products/by-ids";
   const API_CREATE_ORDER = "/api/public/orders";
   const API_VNPAY_CREATE = "/api/public/payments/vnpay/create";
+  const API_VOUCHER_PREVIEW = "/api/public/vouchers/preview";
   const SHIPPING_STANDARD = 30000;
 
   const { requireAuth, setSession, getSession, wireStoreHeader } = window.WinIStore;
@@ -72,11 +73,12 @@
     return method === "STORE_PICKUP" ? 0 : SHIPPING_STANDARD;
   }
 
-  function renderTotals(subtotal, method) {
-    const ship = shippingFor(method);
-    const total = subtotal + ship;
+  function renderTotals(subtotal, method, discount = 0, shippingOverride = null, totalOverride = null) {
+    const ship = shippingOverride == null ? shippingFor(method) : shippingOverride;
+    const total = totalOverride == null ? Math.max(0, subtotal + ship - discount) : totalOverride;
     document.getElementById("coSubtotal").textContent = fmtVnd(subtotal);
     document.getElementById("coShipping").textContent = ship === 0 ? "Miễn phí" : fmtVnd(ship);
+    document.getElementById("coDiscount").textContent = discount > 0 ? `- ${fmtVnd(discount)}` : fmtVnd(0);
     document.getElementById("coTotal").textContent = fmtVnd(total);
   }
 
@@ -162,6 +164,10 @@
     const selectedIdx = Math.max(0, addresses.findIndex((a) => a.isDefault) >= 0 ? addresses.findIndex((a) => a.isDefault) : 0);
 
     let products = [];
+    let appliedVoucherCode = null;
+    let appliedDiscount = 0;
+    let appliedShipping = null;
+    let appliedTotal = null;
     try {
       const ids = items.map((x) => x.productId);
       products = ids.length ? await fetchProductsByIds(ids) : [];
@@ -202,12 +208,63 @@
     }).join("");
 
     function refreshTotals() {
-      renderTotals(subtotal, selectedPayment());
+      renderTotals(subtotal, selectedPayment(), appliedDiscount, appliedShipping, appliedTotal);
+    }
+
+    async function applyVoucherPreview() {
+      const codeInput = document.getElementById("voucherCodeInput");
+      const hint = document.getElementById("voucherHint");
+      const code = (codeInput?.value || "").trim();
+      if (!code) {
+        appliedVoucherCode = null;
+        appliedDiscount = 0;
+        appliedShipping = null;
+        appliedTotal = null;
+        if (hint) hint.textContent = "Chưa áp mã.";
+        refreshTotals();
+        return;
+      }
+      const payload = {
+        userId: Number(sessionUser?.id || user?.id),
+        items: items.map((x) => ({ productId: x.productId, quantity: x.quantity || 1 })),
+        paymentMethod: selectedPayment(),
+        recipientName: sessionUser?.fullName || null,
+        recipientPhone: sessionUser?.phone || null,
+        shippingAddress: "Theo địa chỉ đã chọn",
+        customerNote: null,
+        voucherCode: code,
+      };
+      const res = await fetch(API_VOUCHER_PREVIEW, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const ct = res.headers.get("content-type") || "";
+      const data = ct.includes("application/json") ? await res.json() : null;
+      if (!res.ok) {
+        appliedVoucherCode = null;
+        appliedDiscount = 0;
+        appliedShipping = null;
+        appliedTotal = null;
+        if (hint) hint.textContent = (data && data.message) ? data.message : "Mã không hợp lệ.";
+        refreshTotals();
+        return;
+      }
+      appliedVoucherCode = data?.voucherCode || code;
+      appliedDiscount = Number(data?.discountAmount || 0);
+      appliedShipping = Number(data?.shippingFee || shippingFor(selectedPayment()));
+      appliedTotal = Number(data?.totalPrice || (subtotal + shippingFor(selectedPayment()) - appliedDiscount));
+      if (hint) hint.textContent = `Đã áp mã: ${appliedVoucherCode}`;
+      refreshTotals();
     }
 
     document.querySelectorAll("input[name='paymentMethod']").forEach((r) => {
       r.addEventListener("change", () => {
-        refreshTotals();
+        if (appliedVoucherCode) {
+          void applyVoucherPreview();
+        } else {
+          refreshTotals();
+        }
         const v = selectedPayment();
         document.getElementById("vnpayMethodWrap")?.classList.toggle("d-none", v !== "VNPAY");
         document.getElementById("vnpayHint")?.classList.toggle("d-none", v !== "VNPAY");
@@ -229,6 +286,9 @@
       if (mp && !mp.value) mp.value = sessionUser.phone || "";
     }
     refreshTotals();
+    document.getElementById("btnApplyVoucher")?.addEventListener("click", () => {
+      void applyVoucherPreview();
+    });
 
     document.getElementById("btnAddAddress")?.addEventListener("click", () => {
       const box = document.getElementById("newAddressForm");
@@ -325,6 +385,7 @@
           recipientPhone: phone,
           shippingAddress: addrText,
           customerNote: noteRaw.length ? noteRaw.slice(0, 500) : null,
+          voucherCode: appliedVoucherCode,
         };
 
         if (pm === "VNPAY") {
