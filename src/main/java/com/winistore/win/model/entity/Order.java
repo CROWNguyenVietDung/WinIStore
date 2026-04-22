@@ -1,6 +1,7 @@
 package com.winistore.win.model.entity;
 
 import com.winistore.win.model.enums.OrderStatus;
+import com.winistore.win.model.enums.PaymentMethod;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,6 +50,20 @@ public class Order {
     @Column(name = "cancel_reason", length = 500)
     private String cancelReason;
 
+    /** Phương thức thanh toán khi đặt (COD, VNPay, nhận tại cửa hàng). */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", length = 20)
+    private PaymentMethod paymentMethod;
+
+    @Column(name = "shipping_fee", precision = 18, scale = 2)
+    private BigDecimal shippingFee;
+
+    @Column(name = "discount_amount", precision = 18, scale = 2)
+    private BigDecimal discountAmount;
+
+    @Column(name = "voucher_code", length = 100)
+    private String voucherCode;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
@@ -56,7 +71,9 @@ public class Order {
     }
 
     public Order(Long id, User user, BigDecimal totalPrice, OrderStatus status, LocalDateTime createdAt,
-                 String customerNote, String cancelReason, List<OrderDetail> orderDetails) {
+                 String customerNote, String cancelReason, PaymentMethod paymentMethod,
+                 BigDecimal shippingFee, BigDecimal discountAmount, String voucherCode,
+                 List<OrderDetail> orderDetails) {
         this.id = id;
         this.user = user;
         this.totalPrice = totalPrice;
@@ -64,6 +81,10 @@ public class Order {
         this.createdAt = createdAt;
         this.customerNote = customerNote;
         this.cancelReason = cancelReason;
+        this.paymentMethod = paymentMethod;
+        this.shippingFee = shippingFee;
+        this.discountAmount = discountAmount;
+        this.voucherCode = voucherCode;
         this.orderDetails = orderDetails == null ? new ArrayList<>() : orderDetails;
     }
 
@@ -79,6 +100,10 @@ public class Order {
         private LocalDateTime createdAt;
         private String customerNote;
         private String cancelReason;
+        private PaymentMethod paymentMethod;
+        private BigDecimal shippingFee;
+        private BigDecimal discountAmount;
+        private String voucherCode;
         private List<OrderDetail> orderDetails;
 
         public Builder id(Long id) {
@@ -116,13 +141,34 @@ public class Order {
             return this;
         }
 
+        public Builder paymentMethod(PaymentMethod paymentMethod) {
+            this.paymentMethod = paymentMethod;
+            return this;
+        }
+
+        public Builder shippingFee(BigDecimal shippingFee) {
+            this.shippingFee = shippingFee;
+            return this;
+        }
+
+        public Builder discountAmount(BigDecimal discountAmount) {
+            this.discountAmount = discountAmount;
+            return this;
+        }
+
+        public Builder voucherCode(String voucherCode) {
+            this.voucherCode = voucherCode;
+            return this;
+        }
+
         public Builder orderDetails(List<OrderDetail> orderDetails) {
             this.orderDetails = orderDetails;
             return this;
         }
 
         public Order build() {
-            return new Order(id, user, totalPrice, status, createdAt, customerNote, cancelReason, orderDetails);
+            return new Order(id, user, totalPrice, status, createdAt, customerNote, cancelReason, paymentMethod,
+                    shippingFee, discountAmount, voucherCode, orderDetails);
         }
     }
 
@@ -180,6 +226,38 @@ public class Order {
 
     public void setCancelReason(String cancelReason) {
         this.cancelReason = cancelReason;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public BigDecimal getShippingFee() {
+        return shippingFee;
+    }
+
+    public void setShippingFee(BigDecimal shippingFee) {
+        this.shippingFee = shippingFee;
+    }
+
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(BigDecimal discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public String getVoucherCode() {
+        return voucherCode;
+    }
+
+    public void setVoucherCode(String voucherCode) {
+        this.voucherCode = voucherCode;
     }
 
     public List<OrderDetail> getOrderDetails() {

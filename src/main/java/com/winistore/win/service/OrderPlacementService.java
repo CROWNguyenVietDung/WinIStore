@@ -112,12 +112,14 @@ public class OrderPlacementService {
         Map<Long, Integer> quantities = collectQuantities(req.items());
         List<Product> products = productRepository.findAllById(quantities.keySet());
 
+        PaymentMethod paymentMethod = parsePaymentMethod(req.paymentMethod());
         Order order = Order.builder()
                 .user(user)
                 .status(OrderStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .totalPrice(BigDecimal.ZERO)
                 .customerNote(sanitizeCustomerNote(req.customerNote()))
+                .paymentMethod(paymentMethod)
                 .build();
         order = orderRepository.save(order);
 
@@ -146,8 +148,42 @@ public class OrderPlacementService {
         }
 
         order.setTotalPrice(quote.totalPrice());
+        order.setShippingFee(quote.shippingFee());
+        order.setDiscountAmount(quote.discountAmount());
+        order.setVoucherCode(trimToNull(quote.appliedVoucherCode()));
         orderRepository.save(order);
+        if (quote.appliedVoucherCode() != null) {
+            incrementVoucherUsage(quote.appliedVoucherCode());
+        }
         return new CreateOrderResponse(order.getId(), quote.totalPrice(), quote.shippingFee(), quote.goodsTotal());
+    }
+
+    private void incrementVoucherUsage(String rawCode) {
+        String code = trimToNull(rawCode);
+        if (code == null) {
+            return;
+        }
+        Voucher v = voucherRepository.findByCodeIgnoreCase(code).orElse(null);
+        if (v == null) {
+            return;
+        }
+        int used = v.getUsedCount() == null ? 0 : v.getUsedCount();
+        v.setUsedCount(used + 1);
+        voucherRepository.save(v);
+    }
+
+    private void decrementVoucherUsage(String rawCode) {
+        String code = trimToNull(rawCode);
+        if (code == null) {
+            return;
+        }
+        Voucher v = voucherRepository.findByCodeIgnoreCase(code).orElse(null);
+        if (v == null) {
+            return;
+        }
+        int used = v.getUsedCount() == null ? 0 : v.getUsedCount();
+        v.setUsedCount(Math.max(0, used - 1));
+        voucherRepository.save(v);
     }
 
     private Voucher resolveVoucher(String rawCode, BigDecimal goodsTotal) {
@@ -168,6 +204,13 @@ public class OrderPlacementService {
         BigDecimal min = voucher.getMinOrderValue() == null ? BigDecimal.ZERO : voucher.getMinOrderValue();
         if (goodsTotal.compareTo(min) < 0) {
             throw new IllegalArgumentException("Đơn hàng chưa đạt giá trị tối thiểu để áp mã.");
+        }
+        Integer limit = voucher.getUsageLimit();
+        if (limit != null && limit > 0) {
+            int used = voucher.getUsedCount() == null ? 0 : voucher.getUsedCount();
+            if (used >= limit) {
+                throw new IllegalArgumentException("Mã giảm giá đã hết lượt sử dụng.");
+            }
         }
         return voucher;
     }
@@ -208,6 +251,7 @@ public class OrderPlacementService {
 
         String sanitizedReason = sanitizeCancelReason(reason);
         restoreInventory(order);
+        decrementVoucherUsage(order.getVoucherCode());
         order.setStatus(OrderStatus.CANCELLED);
         order.setCancelReason(sanitizedReason);
         return orderRepository.save(order);

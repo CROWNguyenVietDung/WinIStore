@@ -105,6 +105,17 @@ public class AdminVoucherController {
         if (req.startAt() != null && req.endAt() != null && req.endAt().isBefore(req.startAt())) {
             throw new IllegalArgumentException("Hạn sử dụng không hợp lệ.");
         }
+        Integer usageLimit = req.usageLimit();
+        if (usageLimit != null) {
+            if (usageLimit < 1) {
+                throw new IllegalArgumentException("Giới hạn lượt dùng phải ≥ 1 hoặc để trống (không giới hạn).");
+            }
+            Integer usedVal = v.getUsedCount();
+            int used = usedVal == null ? 0 : usedVal;
+            if (used > usageLimit) {
+                throw new IllegalArgumentException("Giới hạn lượt dùng không được nhỏ hơn số lần đã sử dụng (" + used + ").");
+            }
+        }
         if (!updating || !code.equalsIgnoreCase(v.getCode())) {
             voucherRepository.findByCodeIgnoreCase(code).ifPresent(exist -> {
                 if (v.getId() == null || !exist.getId().equals(v.getId())) {
@@ -119,6 +130,10 @@ public class AdminVoucherController {
         v.setActive(req.active() == null ? Boolean.TRUE : req.active());
         v.setStartAt(req.startAt());
         v.setEndAt(req.endAt());
+        v.setUsageLimit(usageLimit);
+        if (!updating) {
+            v.setUsedCount(0);
+        }
         if (v.getEndAt() != null && LocalDateTime.now().isAfter(v.getEndAt())) {
             v.setActive(false);
         }
@@ -141,6 +156,8 @@ public class AdminVoucherController {
                 v.getActive(),
                 v.getStartAt(),
                 v.getEndAt(),
+                v.getUsageLimit(),
+                v.getUsedCount(),
                 status
         );
     }

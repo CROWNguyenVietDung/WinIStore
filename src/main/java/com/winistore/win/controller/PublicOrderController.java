@@ -5,6 +5,9 @@ import com.winistore.win.dto.order.CreateOrderResponse;
 import com.winistore.win.dto.order.CustomerCancelOrderRequest;
 import com.winistore.win.dto.order.OrderSummaryDto;
 import com.winistore.win.model.entity.Order;
+import com.winistore.win.model.entity.OrderDetail;
+import com.winistore.win.model.enums.OrderStatus;
+import com.winistore.win.model.enums.PaymentMethod;
 import com.winistore.win.repository.OrderRepository;
 import com.winistore.win.service.OrderPlacementService;
 import org.springframework.http.MediaType;
@@ -18,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 
@@ -87,19 +92,20 @@ public class PublicOrderController {
         List<OrderSummaryDto.OrderItemDto> items = o.getOrderDetails() == null
                 ? List.of()
                 : o.getOrderDetails().stream()
-                .map(d -> new OrderSummaryDto.OrderItemDto(
-                        d.getProduct() != null ? d.getProduct().getId() : null,
-                        d.getProduct() != null ? d.getProduct().getName() : "Sản phẩm",
-                        d.getQuantity()
-                ))
+                .map(this::toItemDto)
                 .toList();
+        PaymentMethod pm = o.getPaymentMethod();
+        String pmName = pm == null ? null : pm.name();
         return new OrderSummaryDto(
                 o.getId(),
                 o.getStatus() == null ? null : o.getStatus().name(),
                 o.getCreatedAt(),
                 o.getTotalPrice(),
-                null,
-                null,
+                o.getShippingFee(),
+                pmName,
+                paymentStatusLabel(o.getStatus(), pm),
+                o.getDiscountAmount(),
+                trimToNull(o.getVoucherCode()),
                 recipientName,
                 recipientPhone,
                 shippingAddress,
@@ -107,6 +113,39 @@ public class PublicOrderController {
                 items,
                 trimToNull(o.getCustomerNote())
         );
+    }
+
+    private OrderSummaryDto.OrderItemDto toItemDto(OrderDetail d) {
+        BigDecimal unit = d.getPrice() == null ? BigDecimal.ZERO : d.getPrice();
+        Integer qVal = d.getQuantity();
+        int q = qVal == null ? 0 : qVal;
+        BigDecimal line = unit.multiply(BigDecimal.valueOf(q)).setScale(2, RoundingMode.HALF_UP);
+        return new OrderSummaryDto.OrderItemDto(
+                d.getProduct() != null ? d.getProduct().getId() : null,
+                d.getProduct() != null ? d.getProduct().getName() : "Sản phẩm",
+                d.getQuantity(),
+                unit,
+                line
+        );
+    }
+
+    private String paymentStatusLabel(OrderStatus status, PaymentMethod paymentMethod) {
+        if (status == OrderStatus.CANCELLED) {
+            return "Đã hủy";
+        }
+        if (status == OrderStatus.COMPLETED) {
+            return "Đã thanh toán";
+        }
+        if (paymentMethod == PaymentMethod.VNPAY) {
+            return "Đã thanh toán";
+        }
+        if (paymentMethod == PaymentMethod.COD) {
+            return "Chưa thanh toán (thu khi giao)";
+        }
+        if (paymentMethod == PaymentMethod.STORE_PICKUP) {
+            return "Chưa thanh toán (tại cửa hàng)";
+        }
+        return "—";
     }
 
     private String trimToNull(String s) {

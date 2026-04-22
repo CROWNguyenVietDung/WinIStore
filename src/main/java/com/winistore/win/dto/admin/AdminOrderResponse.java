@@ -16,6 +16,8 @@ public record AdminOrderResponse(
         Integer totalQuantity,
         List<AdminOrderItemResponse> items,
         String customerNote,
-        String cancelReason
+        String cancelReason,
+        String paymentMethod,
+        String paymentStatus
 ) {
 }

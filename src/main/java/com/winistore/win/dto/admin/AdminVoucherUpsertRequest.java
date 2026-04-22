@@ -10,6 +10,8 @@ public record AdminVoucherUpsertRequest(
         BigDecimal minOrderValue,
         Boolean active,
         LocalDateTime startAt,
-        LocalDateTime endAt
+        LocalDateTime endAt,
+        /** null = không giới hạn số lần áp mã */
+        Integer usageLimit
 ) {
 }

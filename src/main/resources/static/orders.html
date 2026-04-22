@@ -218,6 +218,21 @@
   <div id="ordersEmpty" class="text-muted text-center p-5 d-none">Bạn chưa có đơn hàng.</div>
 </div>
 
+  <div class="modal fade" id="orderReceiptModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content" style="border-radius:0.9rem;">
+        <div class="modal-header">
+          <h5 class="modal-title" id="orderReceiptTitle">Chi tiết đơn hàng</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body" id="orderReceiptBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script src="./app.js"></script>
 <script>
   (function () {

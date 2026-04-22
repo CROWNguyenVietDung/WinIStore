@@ -11,6 +11,9 @@ public record OrderSummaryDto(
         BigDecimal totalPrice,
         BigDecimal shippingFee,
         String paymentMethod,
+        String paymentStatus,
+        BigDecimal discountAmount,
+        String voucherCode,
         String recipientName,
         String recipientPhone,
         String shippingAddress,
@@ -21,6 +24,9 @@ public record OrderSummaryDto(
     public record OrderItemDto(
             Long productId,
             String productName,
-            Integer quantity
-    ) {}
+            Integer quantity,
+            BigDecimal unitPrice,
+            BigDecimal lineTotal
+    ) {
+    }
 }

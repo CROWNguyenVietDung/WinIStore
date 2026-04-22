@@ -8,11 +8,14 @@ import com.winistore.win.model.entity.Order;
 import com.winistore.win.model.entity.OrderDetail;
 import com.winistore.win.model.entity.Product;
 import com.winistore.win.model.entity.User;
+import com.winistore.win.model.entity.Voucher;
 import com.winistore.win.model.enums.OrderStatus;
+import com.winistore.win.model.enums.PaymentMethod;
 import com.winistore.win.repository.OrderDetailRepository;
 import com.winistore.win.repository.OrderRepository;
 import com.winistore.win.repository.ProductRepository;
 import com.winistore.win.repository.UserRepository;
+import com.winistore.win.repository.VoucherRepository;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,17 +42,20 @@ public class AdminOrderController {
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final VoucherRepository voucherRepository;
 
     public AdminOrderController(
             OrderRepository orderRepository,
             OrderDetailRepository orderDetailRepository,
             ProductRepository productRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            VoucherRepository voucherRepository
     ) {
         this.orderRepository = orderRepository;
         this.orderDetailRepository = orderDetailRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.voucherRepository = voucherRepository;
     }
 
     @GetMapping
@@ -139,6 +145,9 @@ public class AdminOrderController {
         }
 
         order.setTotalPrice(total);
+        order.setShippingFee(BigDecimal.ZERO);
+        order.setDiscountAmount(BigDecimal.ZERO);
+        order.setVoucherCode(null);
         orderRepository.save(order);
         return toResponse(order);
     }
@@ -157,6 +166,7 @@ public class AdminOrderController {
         }
 
         restoreInventory(order);
+        releaseVoucherSlot(order.getVoucherCode());
         order.setStatus(OrderStatus.CANCELLED);
         order.setCancelReason(null);
         orderRepository.save(order);
@@ -192,9 +202,24 @@ public class AdminOrderController {
             return cancel(id);
         }
 
+        assertForwardStatusTransition(current, newStatus);
         order.setStatus(newStatus);
         orderRepository.save(order);
         return toResponse(order);
+    }
+
+    /** Chỉ cho phép: PENDING → DELIVERING → COMPLETED (không nhảy bước, không lùi). Hủy qua luồng riêng. */
+    private void assertForwardStatusTransition(OrderStatus current, OrderStatus next) {
+        if (current == next) {
+            return;
+        }
+        if (current == OrderStatus.PENDING && next == OrderStatus.DELIVERING) {
+            return;
+        }
+        if (current == OrderStatus.DELIVERING && next == OrderStatus.COMPLETED) {
+            return;
+        }
+        throw new IllegalArgumentException("Chỉ được chuyển tiến: Chờ xử lý → Đang giao → Đã giao. Không thể quay lại trạng thái trước.");
     }
 
     private void restoreInventory(Order order) {
@@ -243,6 +268,8 @@ public class AdminOrderController {
                 .sum();
 
         User u = order.getUser();
+        PaymentMethod pm = order.getPaymentMethod();
+        String pmName = pm == null ? null : pm.name();
         return new AdminOrderResponse(
                 order.getId(),
                 u != null ? u.getId() : null,
@@ -255,8 +282,46 @@ public class AdminOrderController {
                 totalQuantity,
                 items,
                 order.getCustomerNote(),
-                order.getCancelReason()
+                order.getCancelReason(),
+                pmName,
+                paymentStatusLabel(order.getStatus(), pm)
         );
+    }
+
+    private void releaseVoucherSlot(String rawCode) {
+        if (rawCode == null) {
+            return;
+        }
+        String code = rawCode.trim();
+        if (code.isEmpty()) {
+            return;
+        }
+        Voucher v = voucherRepository.findByCodeIgnoreCase(code).orElse(null);
+        if (v == null) {
+            return;
+        }
+        int used = v.getUsedCount() == null ? 0 : v.getUsedCount();
+        v.setUsedCount(Math.max(0, used - 1));
+        voucherRepository.save(v);
+    }
+
+    private String paymentStatusLabel(OrderStatus status, PaymentMethod paymentMethod) {
+        if (status == OrderStatus.CANCELLED) {
+            return "Đã hủy";
+        }
+        if (status == OrderStatus.COMPLETED) {
+            return "Đã thanh toán";
+        }
+        if (paymentMethod == PaymentMethod.VNPAY) {
+            return "Đã thanh toán";
+        }
+        if (paymentMethod == PaymentMethod.COD) {
+            return "Chưa thanh toán (thu khi giao)";
+        }
+        if (paymentMethod == PaymentMethod.STORE_PICKUP) {
+            return "Chưa thanh toán (tại cửa hàng)";
+        }
+        return "—";
     }
 
     private BigDecimal discountedUnitPrice(BigDecimal price, Integer discountPercent) {

@@ -12,6 +12,8 @@ public record AdminVoucherResponse(
         Boolean active,
         LocalDateTime startAt,
         LocalDateTime endAt,
+        Integer usageLimit,
+        Integer usedCount,
         String status
 ) {
 }

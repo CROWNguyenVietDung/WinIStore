@@ -42,6 +42,14 @@ public class Voucher {
     @Column(name = "end_at")
     private LocalDateTime endAt;
 
+    /** Số lần tối đa áp mã (null = không giới hạn). */
+    @Column(name = "usage_limit")
+    private Integer usageLimit;
+
+    /** Số lần đã áp mã thành công (đặt hàng). */
+    @Column(name = "used_count", nullable = false)
+    private Integer usedCount = 0;
+
     public Voucher() {
     }
 
@@ -61,4 +69,8 @@ public class Voucher {
     public void setStartAt(LocalDateTime startAt) { this.startAt = startAt; }
     public LocalDateTime getEndAt() { return endAt; }
     public void setEndAt(LocalDateTime endAt) { this.endAt = endAt; }
+    public Integer getUsageLimit() { return usageLimit; }
+    public void setUsageLimit(Integer usageLimit) { this.usageLimit = usageLimit; }
+    public Integer getUsedCount() { return usedCount; }
+    public void setUsedCount(Integer usedCount) { this.usedCount = usedCount; }
 }

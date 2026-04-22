@@ -404,10 +404,40 @@
           <div class="card border-0 shadow-sm">
             <div class="card-body">
               <h2 class="h6 mb-3">Quản lý đơn hàng</h2>
-              <div class="row g-2 mb-3">
-                <div class="col-12 col-md-6 col-lg-4">
+              <div class="row g-2 align-items-end mb-3">
+                <div class="col-12 col-md-4 col-lg-3">
                   <label class="form-label small text-muted mb-0" for="adminOrdersSearch">Tìm nhanh</label>
                   <input type="search" id="adminOrdersSearch" class="form-control form-control-sm" placeholder="Mã đơn, khách, email, sản phẩm..." autocomplete="off" />
+                </div>
+                <div class="col-6 col-md-2 col-lg-2">
+                  <label class="form-label small text-muted mb-0" for="adminOrdersFilterStatus">Trạng thái</label>
+                  <select id="adminOrdersFilterStatus" class="form-select form-select-sm">
+                    <option value="">Tất cả</option>
+                    <option value="PENDING">Chờ xử lý</option>
+                    <option value="DELIVERING">Đang giao</option>
+                    <option value="COMPLETED">Đã giao</option>
+                    <option value="CANCELLED">Đã hủy</option>
+                  </select>
+                </div>
+                <div class="col-6 col-md-2 col-lg-2">
+                  <label class="form-label small text-muted mb-0" for="adminOrdersFilterPay">Thanh toán</label>
+                  <select id="adminOrdersFilterPay" class="form-select form-select-sm">
+                    <option value="">Tất cả</option>
+                    <option value="PAID">Đã thanh toán</option>
+                    <option value="UNPAID">Chưa thanh toán</option>
+                    <option value="CANCELLED_PAY">Đã hủy</option>
+                  </select>
+                </div>
+                <div class="col-6 col-md-2 col-lg-2">
+                  <label class="form-label small text-muted mb-0" for="adminOrdersMinTotal">Tổng tiền từ</label>
+                  <input type="number" id="adminOrdersMinTotal" class="form-control form-control-sm" min="0" step="1000" placeholder="0" />
+                </div>
+                <div class="col-6 col-md-2 col-lg-2">
+                  <label class="form-label small text-muted mb-0" for="adminOrdersMaxTotal">Đến</label>
+                  <input type="number" id="adminOrdersMaxTotal" class="form-control form-control-sm" min="0" step="1000" placeholder="Không giới hạn" />
+                </div>
+                <div class="col-12 col-md-12 col-lg-1 d-grid d-lg-block">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="adminOrdersClearFilters">Xóa lọc</button>
                 </div>
               </div>
               <h3 class="h6">Đơn đang xử lý</h3>
@@ -420,6 +450,7 @@
                       <th>Sản phẩm</th>
                       <th>SL</th>
                       <th>Tổng tiền</th>
+                      <th>Thanh toán</th>
                       <th>Ghi chú</th>
                       <th>Trạng thái</th>
                       <th style="width: 200px;">Hành động</th>
@@ -440,6 +471,7 @@
                       <th>Sản phẩm</th>
                       <th>SL</th>
                       <th>Tổng tiền</th>
+                      <th>Thanh toán</th>
                       <th>Ghi chú</th>
                       <th>Trạng thái</th>
                       <th>Ngày tạo</th>
@@ -458,22 +490,39 @@
             <div class="card-body">
               <h2 class="h6 mb-3">Quản lý sản phẩm</h2>
 
-              <div class="row g-3 align-items-end mb-3">
-                <div class="col-md-4">
+              <div class="row g-2 align-items-end mb-2">
+                <div class="col-md-3">
                   <label class="form-label fw-semibold mb-1" for="productCategorySelect">Danh mục</label>
-                  <select id="productCategorySelect" class="form-select">
+                  <select id="productCategorySelect" class="form-select form-select-sm">
                     <option value="">Tất cả</option>
                   </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-2">
+                  <label class="form-label fw-semibold mb-1" for="productFilterMinPrice">Giá từ</label>
+                  <input type="number" id="productFilterMinPrice" class="form-control form-control-sm" min="0" step="1000" placeholder="0" />
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label fw-semibold mb-1" for="productFilterMaxPrice">Giá đến</label>
+                  <input type="number" id="productFilterMaxPrice" class="form-control form-control-sm" min="0" step="1000" placeholder="Tối đa" />
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label fw-semibold mb-1" for="productFilterDiscount">Giảm giá</label>
+                  <select id="productFilterDiscount" class="form-select form-select-sm">
+                    <option value="">Tất cả</option>
+                    <option value="yes">Có giảm giá</option>
+                    <option value="no">Không giảm giá</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
                   <label class="form-label fw-semibold mb-1" for="adminProductSearch">Tìm nhanh</label>
-                  <input type="search" id="adminProductSearch" class="form-control" placeholder="Tên, ID, danh mục..." autocomplete="off" />
+                  <input type="search" id="adminProductSearch" class="form-control form-control-sm" placeholder="Tên, ID, danh mục..." autocomplete="off" />
                 </div>
-                <div class="col-md-4 text-end d-grid d-md-block">
-                  <button type="button" class="btn btn-primary btn-sm ms-auto" id="btnAddProduct">
-                    <i class="bi bi-plus-lg me-1"></i> Thêm sản phẩm
-                  </button>
-                </div>
+              </div>
+              <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="productFilterClearBtn">Xóa bộ lọc giá</button>
+                <button type="button" class="btn btn-primary btn-sm ms-md-auto" id="btnAddProduct">
+                  <i class="bi bi-plus-lg me-1"></i> Thêm sản phẩm
+                </button>
               </div>
 
               <div class="row g-3" id="productsGrid"></div>
@@ -489,16 +538,15 @@
           <div class="card border-0 shadow-sm">
             <div class="card-body">
               <h2 class="h6 mb-3">Quản lý voucher</h2>
-              <div id="voucherFormAlert" class="alert alert-danger d-none" role="alert"></div>
-              <input type="hidden" id="voucherId" value="" />
-              <div class="row g-2 mb-3">
+              <div class="row g-2 align-items-end mb-3">
                 <div class="col-md-3">
-                  <label class="form-label small text-muted mb-0">Mã voucher</label>
-                  <input id="voucherCode" type="text" class="form-control form-control-sm" placeholder="SINHVIEN" />
+                  <label class="form-label small text-muted mb-0" for="voucherSearchInput">Tìm kiếm</label>
+                  <input id="voucherSearchInput" type="search" class="form-control form-control-sm" placeholder="Mã voucher..." autocomplete="off" />
                 </div>
                 <div class="col-md-2">
-                  <label class="form-label small text-muted mb-0">Loại</label>
-                  <select id="voucherType" class="form-select form-select-sm">
+                  <label class="form-label small text-muted mb-0" for="voucherFilterType">Loại giảm</label>
+                  <select id="voucherFilterType" class="form-select form-select-sm">
+                    <option value="">Tất cả</option>
                     <option value="ORDER_FIXED">Giảm tiền đơn</option>
                     <option value="ORDER_PERCENT">Giảm % đơn</option>
                     <option value="SHIPPING_FIXED">Giảm tiền ship</option>
@@ -506,32 +554,19 @@
                   </select>
                 </div>
                 <div class="col-md-2">
-                  <label class="form-label small text-muted mb-0">Giá trị giảm</label>
-                  <input id="voucherValue" type="number" min="0" class="form-control form-control-sm" />
-                </div>
-                <div class="col-md-2">
-                  <label class="form-label small text-muted mb-0">Đơn tối thiểu</label>
-                  <input id="voucherMinOrder" type="number" min="0" class="form-control form-control-sm" value="0" />
-                </div>
-                <div class="col-md-1">
-                  <label class="form-label small text-muted mb-0">Bật</label>
-                  <select id="voucherActive" class="form-select form-select-sm">
-                    <option value="true">Có</option>
-                    <option value="false">Không</option>
+                  <label class="form-label small text-muted mb-0" for="voucherFilterStatusUi">Trạng thái</label>
+                  <select id="voucherFilterStatusUi" class="form-select form-select-sm">
+                    <option value="">Tất cả</option>
+                    <option value="ACTIVE">Đang bật</option>
+                    <option value="INACTIVE">Đang tắt</option>
+                    <option value="EXPIRED">Hết hạn</option>
                   </select>
                 </div>
-                <div class="col-md-2">
-                  <label class="form-label small text-muted mb-0">Bắt đầu</label>
-                  <input id="voucherStartAt" type="datetime-local" class="form-control form-control-sm" />
+                <div class="col-md-5 text-md-end">
+                  <button type="button" class="btn btn-primary btn-sm" id="voucherBtnAddNew">
+                    <i class="bi bi-plus-lg me-1"></i> Thêm mới
+                  </button>
                 </div>
-                <div class="col-md-2">
-                  <label class="form-label small text-muted mb-0">Kết thúc</label>
-                  <input id="voucherEndAt" type="datetime-local" class="form-control form-control-sm" />
-                </div>
-              </div>
-              <div class="d-flex gap-2 mb-3">
-                <button id="voucherSaveBtn" type="button" class="btn btn-primary btn-sm">Lưu voucher</button>
-                <button id="voucherResetBtn" type="button" class="btn btn-outline-secondary btn-sm">Làm mới form</button>
               </div>
               <div class="table-responsive">
                 <table class="table table-hover align-middle bg-white" style="border-radius: 0.75rem; overflow: hidden;">
@@ -541,9 +576,10 @@
                       <th>Loại</th>
                       <th>Giá trị</th>
                       <th>Đơn tối thiểu</th>
+                      <th>Lượt (đã dùng / tối đa)</th>
                       <th>Hiệu lực</th>
                       <th>Trạng thái</th>
-                      <th style="width: 180px;">Hành động</th>
+                      <th style="width: 200px;">Hành động</th>
                     </tr>
                   </thead>
                   <tbody id="vouchersBody"></tbody>
@@ -814,6 +850,75 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal thêm / chi tiết / sửa voucher -->
+  <div class="modal fade" id="voucherModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="voucherModalTitle">Thêm voucher</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body">
+          <div id="vmVoucherFormAlert" class="alert alert-danger d-none" role="alert"></div>
+          <input type="hidden" id="vmVoucherId" value="" />
+          <div class="row g-2">
+            <div class="col-md-4">
+              <label class="form-label small text-muted mb-0" for="vmVoucherCode">Mã voucher</label>
+              <input id="vmVoucherCode" type="text" class="form-control form-control-sm" placeholder="SINHVIEN" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-muted mb-0" for="vmVoucherType">Loại</label>
+              <select id="vmVoucherType" class="form-select form-select-sm">
+                <option value="ORDER_FIXED">Giảm tiền đơn</option>
+                <option value="ORDER_PERCENT">Giảm % đơn</option>
+                <option value="SHIPPING_FIXED">Giảm tiền ship</option>
+                <option value="SHIPPING_PERCENT">Giảm % ship</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-muted mb-0" for="vmVoucherValue">Giá trị giảm</label>
+              <input id="vmVoucherValue" type="number" min="0" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-muted mb-0" for="vmVoucherMinOrder">Đơn tối thiểu</label>
+              <input id="vmVoucherMinOrder" type="number" min="0" class="form-control form-control-sm" value="0" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-muted mb-0" for="vmVoucherActive">Bật</label>
+              <select id="vmVoucherActive" class="form-select form-select-sm">
+                <option value="true">Có</option>
+                <option value="false">Không</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-muted mb-0" for="vmVoucherStartAt">Bắt đầu</label>
+              <input id="vmVoucherStartAt" type="datetime-local" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted mb-0" for="vmVoucherEndAt">Kết thúc</label>
+              <input id="vmVoucherEndAt" type="datetime-local" class="form-control form-control-sm" />
+            </div>
+            <div class="col-12">
+              <div class="form-check mt-1">
+                <input class="form-check-input" type="checkbox" id="vmVoucherUnlimitedUsage" checked />
+                <label class="form-check-label small" for="vmVoucherUnlimitedUsage">Không giới hạn số lần áp mã</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted mb-0" for="vmVoucherUsageLimit">Giới hạn lượt dùng</label>
+              <input id="vmVoucherUsageLimit" type="number" min="1" step="1" class="form-control form-control-sm" placeholder="Ví dụ: 100" disabled />
+              <div class="form-text">Bỏ chọn &quot;Không giới hạn&quot; để nhập số lần tối đa áp mã.</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary" id="vmVoucherSaveBtn">Lưu</button>
         </div>
       </div>
     </div>
@@ -1172,6 +1277,47 @@
         return items.map((i) => `${i.productName || "Sản phẩm"} x${i.quantity || 0}`).join("<br>");
       }
 
+      function orderStatusBadgeClass(st) {
+        if (st === "PENDING") return "text-bg-warning";
+        if (st === "DELIVERING") return "text-bg-primary";
+        if (st === "COMPLETED") return "text-bg-success";
+        if (st === "CANCELLED") return "text-bg-secondary";
+        return "text-bg-light";
+      }
+
+      function orderStatusLabelVi(st) {
+        if (st === "PENDING") return "Chờ xử lý";
+        if (st === "DELIVERING") return "Đang giao";
+        if (st === "COMPLETED") return "Đã giao";
+        if (st === "CANCELLED") return "Đã hủy";
+        return st || "—";
+      }
+
+      function orderPaymentBadgeClass(o) {
+        const st = o?.status;
+        if (st === "CANCELLED") return "text-bg-secondary";
+        if (st === "COMPLETED" || o?.paymentMethod === "VNPAY") return "text-bg-success";
+        return "text-bg-warning text-dark";
+      }
+
+      function orderPaymentCategory(o) {
+        const st = o?.status;
+        if (st === "CANCELLED") return "CANCELLED_PAY";
+        if (st === "COMPLETED" || o?.paymentMethod === "VNPAY") return "PAID";
+        return "UNPAID";
+      }
+
+      function orderStatusActionButtons(o) {
+        const cur = o.status || "";
+        if (cur === "PENDING") {
+          return `<button class="btn btn-sm btn-primary" type="button" data-order-status="DELIVERING" data-id="${o.id}">Chuyển sang đang giao</button>`;
+        }
+        if (cur === "DELIVERING") {
+          return `<button class="btn btn-sm btn-success" type="button" data-order-status="COMPLETED" data-id="${o.id}">Đánh dấu đã giao</button>`;
+        }
+        return `<span class="text-muted small">—</span>`;
+      }
+
       function renderOrders(list) {
         ordersBody.innerHTML = "";
         if (!list || list.length === 0) {
@@ -1181,23 +1327,24 @@
         ordersEmpty.classList.add("d-none");
         list.forEach((o) => {
           const tr = document.createElement("tr");
+          const st = o.status || "";
+          const payText = o.paymentStatus || "—";
           tr.innerHTML = `
             <td>#${o.id}</td>
             <td>${o.customerName || ""}<br><small class="text-muted">${o.customerEmail || ""}</small></td>
             <td class="small">${flattenOrderItems(o.items)}</td>
             <td>${o.totalQuantity ?? 0}</td>
             <td>${formatVnd(o.totalPrice || 0)}</td>
-            <td class="small text-break" style="max-width: 180px;">${o.customerNote ? String(o.customerNote).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "—"}</td>
+            <td><span class="badge ${orderPaymentBadgeClass(o)}">${escapeCell(payText)}</span></td>
+            <td class="small text-break" style="max-width: 160px;">${o.customerNote ? String(o.customerNote).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "—"}</td>
             <td>
-              <select class="form-select form-select-sm" data-action="status" data-id="${o.id}">
-                <option value="PENDING" ${o.status === "PENDING" ? "selected" : ""}>Chờ xử lý</option>
-                <option value="DELIVERING" ${o.status === "DELIVERING" ? "selected" : ""}>Đang giao</option>
-                <option value="COMPLETED" ${o.status === "COMPLETED" ? "selected" : ""}>Đã giao</option>
-                <option value="CANCELLED" ${o.status === "CANCELLED" ? "selected" : ""}>Đã hủy</option>
-              </select>
+              <div class="d-flex flex-column gap-1 align-items-start">
+                <span class="badge ${orderStatusBadgeClass(st)}">${orderStatusLabelVi(st)}</span>
+                ${orderStatusActionButtons(o)}
+              </div>
             </td>
             <td>
-              <button class="btn btn-outline-danger btn-sm" type="button" data-action="cancel" data-id="${o.id}">
+              <button class="btn btn-outline-danger btn-sm" type="button" data-action="cancel" data-id="${o.id}" ${st === "DELIVERING" || st === "PENDING" ? "" : "disabled"}>
                 Hủy đơn
               </button>
             </td>
@@ -1215,14 +1362,17 @@
         orderHistoryEmpty.classList.add("d-none");
         list.forEach((o) => {
           const tr = document.createElement("tr");
+          const st = o.status || "";
+          const payText = o.paymentStatus || "—";
           tr.innerHTML = `
             <td>#${o.id}</td>
             <td>${o.customerName || ""}<br><small class="text-muted">${o.customerEmail || ""}</small></td>
             <td class="small">${flattenOrderItems(o.items)}</td>
             <td>${o.totalQuantity ?? 0}</td>
             <td>${formatVnd(o.totalPrice || 0)}</td>
-            <td class="small text-break" style="max-width: 180px;">${o.customerNote ? String(o.customerNote).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "—"}</td>
-            <td>${o.status === "COMPLETED" ? "Đã giao" : "Đã hủy"}</td>
+            <td><span class="badge ${orderPaymentBadgeClass(o)}">${escapeCell(payText)}</span></td>
+            <td class="small text-break" style="max-width: 160px;">${o.customerNote ? String(o.customerNote).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "—"}</td>
+            <td><span class="badge ${orderStatusBadgeClass(st)}">${orderStatusLabelVi(st)}</span></td>
             <td>${formatDateTime(o.createdAt)}</td>
           `;
           orderHistoryBody.appendChild(tr);
@@ -1248,10 +1398,29 @@
         return flat.includes(q);
       }
 
+      function orderMatchesAdminFilters(o) {
+        const stF = (document.getElementById("adminOrdersFilterStatus")?.value || "").trim();
+        if (stF && String(o.status || "") !== stF) return false;
+        const payF = (document.getElementById("adminOrdersFilterPay")?.value || "").trim();
+        if (payF && orderPaymentCategory(o) !== payF) return false;
+        const minRaw = (document.getElementById("adminOrdersMinTotal")?.value || "").trim();
+        const maxRaw = (document.getElementById("adminOrdersMaxTotal")?.value || "").trim();
+        const total = Number(o.totalPrice || 0);
+        if (minRaw !== "") {
+          const minV = Number(minRaw);
+          if (Number.isFinite(minV) && total < minV) return false;
+        }
+        if (maxRaw !== "") {
+          const maxV = Number(maxRaw);
+          if (Number.isFinite(maxV) && total > maxV) return false;
+        }
+        return true;
+      }
+
       function applyOrdersFilter() {
         const q = (document.getElementById("adminOrdersSearch")?.value || "").trim().toLowerCase();
-        const active = ordersActiveCache.filter((o) => orderMatchesAdminSearch(o, q));
-        const hist = ordersHistoryCache.filter((o) => orderMatchesAdminSearch(o, q));
+        const active = ordersActiveCache.filter((o) => orderMatchesAdminSearch(o, q) && orderMatchesAdminFilters(o));
+        const hist = ordersHistoryCache.filter((o) => orderMatchesAdminSearch(o, q) && orderMatchesAdminFilters(o));
         renderOrders(active);
         renderOrderHistory(hist);
       }
@@ -1639,7 +1808,6 @@
           actions += `<button class="btn btn-sm btn-outline-danger mb-1" type="button" data-repair-action="cancel" data-id="${r.id}">Hủy</button>`;
         } else if (st === "CONFIRMED") {
           actions += `<button class="btn btn-sm btn-primary me-1 mb-1" type="button" data-repair-action="inprogress" data-id="${r.id}">Máy đã đến</button>`;
-          actions += `<button class="btn btn-sm btn-outline-primary me-1 mb-1" type="button" data-repair-action="reschedule" data-id="${r.id}">Hẹn ngày khác</button>`;
           actions += `<button class="btn btn-sm btn-outline-danger mb-1" type="button" data-repair-action="cancel" data-id="${r.id}">Hủy</button>`;
         } else if (st === "IN_PROGRESS") {
           actions += `<button class="btn btn-sm btn-success me-1 mb-1" type="button" data-repair-action="complete" data-id="${r.id}">Hoàn thành</button>`;
@@ -1843,6 +2011,23 @@
 
       document.getElementById("adminCustomersSearch")?.addEventListener("input", () => applyCustomerFilter());
       document.getElementById("adminOrdersSearch")?.addEventListener("input", () => applyOrdersFilter());
+      document.getElementById("adminOrdersFilterStatus")?.addEventListener("change", () => applyOrdersFilter());
+      document.getElementById("adminOrdersFilterPay")?.addEventListener("change", () => applyOrdersFilter());
+      document.getElementById("adminOrdersMinTotal")?.addEventListener("change", () => applyOrdersFilter());
+      document.getElementById("adminOrdersMaxTotal")?.addEventListener("change", () => applyOrdersFilter());
+      document.getElementById("adminOrdersClearFilters")?.addEventListener("click", () => {
+        const a = document.getElementById("adminOrdersFilterStatus");
+        const b = document.getElementById("adminOrdersFilterPay");
+        const c = document.getElementById("adminOrdersMinTotal");
+        const d = document.getElementById("adminOrdersMaxTotal");
+        const s = document.getElementById("adminOrdersSearch");
+        if (a) a.value = "";
+        if (b) b.value = "";
+        if (c) c.value = "";
+        if (d) d.value = "";
+        if (s) s.value = "";
+        applyOrdersFilter();
+      });
       document.getElementById("adminProductSearch")?.addEventListener("input", () => applyProductAdminFilter());
       document.getElementById("adminRepairsSearch")?.addEventListener("input", () => renderRepairsFiltered());
       document.getElementById("dashRevenuePreset")?.addEventListener("change", () => {
@@ -1935,20 +2120,24 @@
       });
 
       if (ordersBody) {
-        ordersBody.addEventListener("change", async (e) => {
-          const select = e.target.closest("select[data-action='status']");
-          if (!select) return;
-          const id = Number(select.getAttribute("data-id"));
-          const status = select.value;
-          await jsonFetch(`/api/admin/orders/${id}/status`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status })
-          });
-          await loadOrdersForAdmin();
-        });
-
         ordersBody.addEventListener("click", async (e) => {
+          const stBtn = e.target.closest("button[data-order-status]");
+          if (stBtn) {
+            const id = Number(stBtn.getAttribute("data-id"));
+            const status = stBtn.getAttribute("data-order-status");
+            if (!id || !status) return;
+            try {
+              await jsonFetch(`/api/admin/orders/${id}/status`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status })
+              });
+              await loadOrdersForAdmin();
+            } catch (err) {
+              alert(err.message || "Không cập nhật được trạng thái.");
+            }
+            return;
+          }
           const btn = e.target.closest("button[data-action='cancel']");
           if (!btn) return;
           const id = Number(btn.getAttribute("data-id"));
@@ -2351,14 +2540,41 @@
         productsGrid.innerHTML = list.map(productCardHtml).join("");
       }
 
+      function productEffectivePrice(p) {
+        const price = Number(p?.price || 0);
+        const d = Number(p?.discountPercent || 0);
+        if (d > 0 && d <= 100) return Math.round(price * (100 - d) / 100);
+        return price;
+      }
+
       function applyProductAdminFilter() {
         const q = (document.getElementById("adminProductSearch")?.value || "").trim().toLowerCase();
+        const minP = (document.getElementById("productFilterMinPrice")?.value || "").trim();
+        const maxP = (document.getElementById("productFilterMaxPrice")?.value || "").trim();
+        const disc = (document.getElementById("productFilterDiscount")?.value || "").trim();
         let list = productsRawCache;
         if (q) {
-          list = productsRawCache.filter((p) => {
+          list = list.filter((p) => {
             const t = [p.id, p.name, p.categoryName, p.categoryType].join(" ").toLowerCase();
             return t.includes(q);
           });
+        }
+        if (minP !== "") {
+          const minV = Number(minP);
+          if (Number.isFinite(minV)) {
+            list = list.filter((p) => productEffectivePrice(p) >= minV);
+          }
+        }
+        if (maxP !== "") {
+          const maxV = Number(maxP);
+          if (Number.isFinite(maxV)) {
+            list = list.filter((p) => productEffectivePrice(p) <= maxV);
+          }
+        }
+        if (disc === "yes") {
+          list = list.filter((p) => Number(p?.discountPercent || 0) > 0);
+        } else if (disc === "no") {
+          list = list.filter((p) => !Number(p?.discountPercent || 0));
         }
         renderProducts(list);
       }
@@ -2571,41 +2787,61 @@
           await loadProducts();
         });
       }
+      document.getElementById("productFilterMinPrice")?.addEventListener("change", () => applyProductAdminFilter());
+      document.getElementById("productFilterMaxPrice")?.addEventListener("change", () => applyProductAdminFilter());
+      document.getElementById("productFilterDiscount")?.addEventListener("change", () => applyProductAdminFilter());
+      document.getElementById("productFilterClearBtn")?.addEventListener("click", () => {
+        const a = document.getElementById("productFilterMinPrice");
+        const b = document.getElementById("productFilterMaxPrice");
+        const c = document.getElementById("productFilterDiscount");
+        if (a) a.value = "";
+        if (b) b.value = "";
+        if (c) c.value = "";
+        applyProductAdminFilter();
+      });
 
       // =========================
       // Quản lý voucher (admin)
       // =========================
       const vouchersBody = document.getElementById("vouchersBody");
       const vouchersEmpty = document.getElementById("vouchersEmpty");
-      const voucherIdEl = document.getElementById("voucherId");
-      const voucherCodeEl = document.getElementById("voucherCode");
-      const voucherTypeEl = document.getElementById("voucherType");
-      const voucherValueEl = document.getElementById("voucherValue");
-      const voucherMinOrderEl = document.getElementById("voucherMinOrder");
-      const voucherActiveEl = document.getElementById("voucherActive");
-      const voucherStartAtEl = document.getElementById("voucherStartAt");
-      const voucherEndAtEl = document.getElementById("voucherEndAt");
-      const voucherSaveBtn = document.getElementById("voucherSaveBtn");
-      const voucherResetBtn = document.getElementById("voucherResetBtn");
-      const voucherFormAlert = document.getElementById("voucherFormAlert");
+      const voucherModalEl = document.getElementById("voucherModal");
+      const voucherModalTitle = document.getElementById("voucherModalTitle");
+      const vmVoucherId = document.getElementById("vmVoucherId");
+      const vmVoucherCode = document.getElementById("vmVoucherCode");
+      const vmVoucherType = document.getElementById("vmVoucherType");
+      const vmVoucherValue = document.getElementById("vmVoucherValue");
+      const vmVoucherMinOrder = document.getElementById("vmVoucherMinOrder");
+      const vmVoucherActive = document.getElementById("vmVoucherActive");
+      const vmVoucherStartAt = document.getElementById("vmVoucherStartAt");
+      const vmVoucherEndAt = document.getElementById("vmVoucherEndAt");
+      const vmVoucherUnlimitedUsage = document.getElementById("vmVoucherUnlimitedUsage");
+      const vmVoucherUsageLimit = document.getElementById("vmVoucherUsageLimit");
+      const vmVoucherSaveBtn = document.getElementById("vmVoucherSaveBtn");
+      const vmVoucherFormAlert = document.getElementById("vmVoucherFormAlert");
       let vouchersCache = [];
 
-      function showVoucherFormError(msg) {
-        if (!voucherFormAlert) return;
-        voucherFormAlert.textContent = msg || "";
-        voucherFormAlert.classList.toggle("d-none", !msg);
+      function showVmVoucherError(msg) {
+        if (!vmVoucherFormAlert) return;
+        vmVoucherFormAlert.textContent = msg || "";
+        vmVoucherFormAlert.classList.toggle("d-none", !msg);
       }
 
-      function resetVoucherForm() {
-        if (voucherIdEl) voucherIdEl.value = "";
-        if (voucherCodeEl) voucherCodeEl.value = "";
-        if (voucherTypeEl) voucherTypeEl.value = "ORDER_FIXED";
-        if (voucherValueEl) voucherValueEl.value = "";
-        if (voucherMinOrderEl) voucherMinOrderEl.value = "0";
-        if (voucherActiveEl) voucherActiveEl.value = "true";
-        if (voucherStartAtEl) voucherStartAtEl.value = "";
-        if (voucherEndAtEl) voucherEndAtEl.value = "";
-        showVoucherFormError("");
+      function resetVmVoucherForm() {
+        if (vmVoucherId) vmVoucherId.value = "";
+        if (vmVoucherCode) vmVoucherCode.value = "";
+        if (vmVoucherType) vmVoucherType.value = "ORDER_FIXED";
+        if (vmVoucherValue) vmVoucherValue.value = "";
+        if (vmVoucherMinOrder) vmVoucherMinOrder.value = "0";
+        if (vmVoucherActive) vmVoucherActive.value = "true";
+        if (vmVoucherStartAt) vmVoucherStartAt.value = "";
+        if (vmVoucherEndAt) vmVoucherEndAt.value = "";
+        if (vmVoucherUnlimitedUsage) vmVoucherUnlimitedUsage.checked = true;
+        if (vmVoucherUsageLimit) {
+          vmVoucherUsageLimit.value = "";
+          vmVoucherUsageLimit.disabled = true;
+        }
+        showVmVoucherError("");
       }
 
       function toDateTimeLocal(v) {
@@ -2614,6 +2850,63 @@
         if (Number.isNaN(d.getTime())) return "";
         const pad = (n) => String(n).padStart(2, "0");
         return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }
+
+      function openVoucherModalForCreate() {
+        resetVmVoucherForm();
+        if (voucherModalTitle) voucherModalTitle.textContent = "Thêm voucher";
+        if (vmVoucherCode) vmVoucherCode.disabled = false;
+        showVmVoucherError("");
+        bootstrap.Modal.getOrCreateInstance(voucherModalEl).show();
+      }
+
+      function openVoucherModalForEdit(row) {
+        if (!row) return;
+        resetVmVoucherForm();
+        if (voucherModalTitle) voucherModalTitle.textContent = "Chi tiết / Sửa voucher";
+        if (vmVoucherId) vmVoucherId.value = String(row.id);
+        if (vmVoucherCode) {
+          vmVoucherCode.value = row.code || "";
+          vmVoucherCode.disabled = true;
+        }
+        if (vmVoucherType) vmVoucherType.value = row.discountType || "ORDER_FIXED";
+        if (vmVoucherValue) vmVoucherValue.value = row.discountValue != null ? String(row.discountValue) : "";
+        if (vmVoucherMinOrder) vmVoucherMinOrder.value = row.minOrderValue != null ? String(row.minOrderValue) : "0";
+        if (vmVoucherActive) vmVoucherActive.value = row.active ? "true" : "false";
+        if (vmVoucherStartAt) vmVoucherStartAt.value = toDateTimeLocal(row.startAt);
+        if (vmVoucherEndAt) vmVoucherEndAt.value = toDateTimeLocal(row.endAt);
+        if (row.usageLimit == null) {
+          if (vmVoucherUnlimitedUsage) vmVoucherUnlimitedUsage.checked = true;
+          if (vmVoucherUsageLimit) {
+            vmVoucherUsageLimit.value = "";
+            vmVoucherUsageLimit.disabled = true;
+          }
+        } else {
+          if (vmVoucherUnlimitedUsage) vmVoucherUnlimitedUsage.checked = false;
+          if (vmVoucherUsageLimit) {
+            vmVoucherUsageLimit.value = String(row.usageLimit);
+            vmVoucherUsageLimit.disabled = false;
+          }
+        }
+        showVmVoucherError("");
+        bootstrap.Modal.getOrCreateInstance(voucherModalEl).show();
+      }
+
+      function voucherMatchesUiFilters(v) {
+        const q = (document.getElementById("voucherSearchInput")?.value || "").trim().toLowerCase();
+        if (q && !(String(v.code || "").toLowerCase().includes(q))) return false;
+        const t = (document.getElementById("voucherFilterType")?.value || "").trim();
+        if (t && String(v.discountType || "") !== t) return false;
+        const sf = (document.getElementById("voucherFilterStatusUi")?.value || "").trim();
+        if (sf === "ACTIVE") return Boolean(v.active) && v.status !== "EXPIRED";
+        if (sf === "INACTIVE") return !v.active && v.status !== "EXPIRED";
+        if (sf === "EXPIRED") return v.status === "EXPIRED";
+        return true;
+      }
+
+      function applyVoucherUiFilter() {
+        const list = (vouchersCache || []).filter((v) => voucherMatchesUiFilters(v));
+        renderVouchers(list);
       }
 
       function renderVouchers(list) {
@@ -2632,6 +2925,7 @@
               ? `${Number(v.discountValue || 0)}%`
               : formatVnd(v.discountValue || 0)}</td>
             <td>${formatVnd(v.minOrderValue || 0)}</td>
+            <td class="small">${Number(v.usedCount || 0)} / ${v.usageLimit == null ? "∞" : Number(v.usageLimit)}</td>
             <td class="small">${v.startAt ? toDateTimeLocal(v.startAt) : "—"} → ${v.endAt ? toDateTimeLocal(v.endAt) : "—"}</td>
             <td>
               ${v.status === "EXPIRED"
@@ -2639,7 +2933,7 @@
                 : (v.active ? '<span class="badge text-bg-success">Bật</span>' : '<span class="badge text-bg-secondary">Tắt</span>')}
             </td>
             <td>
-              <button class="btn btn-outline-secondary btn-sm me-1" type="button" data-action="editVoucher" data-id="${v.id}"><i class="bi bi-pencil-square"></i></button>
+              <button class="btn btn-outline-primary btn-sm me-1" type="button" data-action="detailVoucher" data-id="${v.id}">Chi tiết</button>
               <button class="btn btn-outline-warning btn-sm me-1" type="button" data-action="toggleVoucher" data-id="${v.id}" ${v.status === "EXPIRED" ? "disabled" : ""}>
                 <i class="bi bi-power"></i>
               </button>
@@ -2651,21 +2945,49 @@
 
       async function loadVouchers() {
         vouchersCache = await jsonFetch("/api/admin/vouchers", { method: "GET" }) || [];
-        renderVouchers(vouchersCache);
+        applyVoucherUiFilter();
       }
 
-      voucherSaveBtn?.addEventListener("click", async () => {
-        showVoucherFormError("");
+      document.getElementById("voucherBtnAddNew")?.addEventListener("click", () => openVoucherModalForCreate());
+      document.getElementById("voucherSearchInput")?.addEventListener("input", () => applyVoucherUiFilter());
+      document.getElementById("voucherFilterType")?.addEventListener("change", () => applyVoucherUiFilter());
+      document.getElementById("voucherFilterStatusUi")?.addEventListener("change", () => applyVoucherUiFilter());
+
+      vmVoucherUnlimitedUsage?.addEventListener("change", () => {
+        const unlim = Boolean(vmVoucherUnlimitedUsage?.checked);
+        if (vmVoucherUsageLimit) {
+          vmVoucherUsageLimit.disabled = unlim;
+          if (unlim) vmVoucherUsageLimit.value = "";
+        }
+      });
+
+      vmVoucherSaveBtn?.addEventListener("click", async () => {
+        showVmVoucherError("");
         try {
-          const id = Number(voucherIdEl?.value || 0);
+          const id = Number(vmVoucherId?.value || 0);
+          const unlimited = Boolean(vmVoucherUnlimitedUsage?.checked);
+          const limitRaw = (vmVoucherUsageLimit?.value || "").trim();
+          let usageLimit = null;
+          if (!unlimited) {
+            if (!limitRaw) {
+              showVmVoucherError("Nhập giới hạn lượt dùng hoặc chọn không giới hạn.");
+              return;
+            }
+            usageLimit = Number(limitRaw);
+            if (!Number.isFinite(usageLimit) || usageLimit < 1) {
+              showVmVoucherError("Giới hạn lượt dùng phải là số nguyên ≥ 1.");
+              return;
+            }
+          }
           const payload = {
-            code: (voucherCodeEl?.value || "").trim(),
-            discountType: (voucherTypeEl?.value || "").trim(),
-            discountValue: Number(voucherValueEl?.value || 0),
-            minOrderValue: Number(voucherMinOrderEl?.value || 0),
-            active: (voucherActiveEl?.value || "true") === "true",
-            startAt: voucherStartAtEl?.value ? new Date(voucherStartAtEl.value).toISOString().slice(0, 19) : null,
-            endAt: voucherEndAtEl?.value ? new Date(voucherEndAtEl.value).toISOString().slice(0, 19) : null,
+            code: (vmVoucherCode?.value || "").trim(),
+            discountType: (vmVoucherType?.value || "").trim(),
+            discountValue: Number(vmVoucherValue?.value || 0),
+            minOrderValue: Number(vmVoucherMinOrder?.value || 0),
+            active: (vmVoucherActive?.value || "true") === "true",
+            startAt: vmVoucherStartAt?.value ? new Date(vmVoucherStartAt.value).toISOString().slice(0, 19) : null,
+            endAt: vmVoucherEndAt?.value ? new Date(vmVoucherEndAt.value).toISOString().slice(0, 19) : null,
+            usageLimit
           };
           const url = id > 0 ? `/api/admin/vouchers/${id}` : "/api/admin/vouchers";
           const method = id > 0 ? "PUT" : "POST";
@@ -2674,14 +2996,18 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
           });
-          resetVoucherForm();
+          const m = bootstrap.Modal.getInstance(voucherModalEl);
+          if (m) m.hide();
           await loadVouchers();
         } catch (err) {
-          showVoucherFormError(err.message || "Không lưu được voucher.");
+          showVmVoucherError(err.message || "Không lưu được voucher.");
         }
       });
 
-      voucherResetBtn?.addEventListener("click", () => resetVoucherForm());
+      voucherModalEl?.addEventListener("hidden.bs.modal", () => {
+        resetVmVoucherForm();
+        if (vmVoucherCode) vmVoucherCode.disabled = false;
+      });
 
       vouchersBody?.addEventListener("click", async (e) => {
         const btn = e.target.closest("button[data-action]");
@@ -2691,18 +3017,8 @@
         const action = btn.getAttribute("data-action");
         const row = vouchersCache.find((x) => Number(x.id) === id);
         if (!row) return;
-        if (action === "editVoucher") {
-          voucherIdEl.value = String(row.id);
-          voucherCodeEl.value = row.code || "";
-          voucherTypeEl.value = row.discountType || "ORDER_FIXED";
-          voucherValueEl.value = row.discountValue != null ? String(row.discountValue) : "";
-          voucherMinOrderEl.value = row.minOrderValue != null ? String(row.minOrderValue) : "0";
-          voucherActiveEl.value = row.active ? "true" : "false";
-          voucherStartAtEl.value = toDateTimeLocal(row.startAt);
-          voucherEndAtEl.value = toDateTimeLocal(row.endAt);
-          showVoucherFormError("");
-          voucherCodeEl?.scrollIntoView({ behavior: "smooth", block: "center" });
-          voucherCodeEl?.focus();
+        if (action === "detailVoucher") {
+          openVoucherModalForEdit(row);
           return;
         }
         if (action === "toggleVoucher") {

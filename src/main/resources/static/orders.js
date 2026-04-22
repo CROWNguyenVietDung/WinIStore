@@ -46,15 +46,76 @@
     return "text-bg-light text-dark";
   }
 
+  function paymentStatusBadgeClass(o) {
+    const st = o.status;
+    if (st === "CANCELLED") return "text-bg-secondary";
+    if (st === "COMPLETED" || o.paymentMethod === "VNPAY") return "text-bg-success";
+    return "text-bg-warning text-dark";
+  }
+
+  function goodsSubtotal(o) {
+    const items = Array.isArray(o.items) ? o.items : [];
+    return items.reduce((sum, it) => {
+      if (it.lineTotal != null && it.lineTotal !== "") return sum + Number(it.lineTotal);
+      return sum + Number(it.unitPrice || 0) * Number(it.quantity || 0);
+    }, 0);
+  }
+
+  function buildReceiptHtml(o) {
+    const items = Array.isArray(o.items) ? o.items : [];
+    const rows = items
+      .map((it) => {
+        const unit = Number(it.unitPrice ?? 0);
+        const qty = Number(it.quantity || 0);
+        const line = it.lineTotal != null && it.lineTotal !== "" ? Number(it.lineTotal) : unit * qty;
+        return `<tr>
+        <td>${escapeHtml(it.productName || "Sản phẩm")}</td>
+        <td class="text-end">${fmtVnd(unit)}</td>
+        <td class="text-center">${qty}</td>
+        <td class="text-end">${fmtVnd(line)}</td>
+      </tr>`;
+      })
+      .join("");
+    const ship = o.shippingFee != null && o.shippingFee !== "" ? Number(o.shippingFee) : null;
+    const disc = o.discountAmount != null && o.discountAmount !== "" ? Number(o.discountAmount) : 0;
+    const sub = goodsSubtotal(o);
+    const vc = o.voucherCode ? String(o.voucherCode) : "";
+    const discLine = disc > 0 ? `-${fmtVnd(disc)}` : fmtVnd(0);
+    return `
+      <div class="border rounded-3 p-3 bg-white">
+        <div class="d-flex justify-content-between flex-wrap gap-2 small text-muted mb-2">
+          <span>Mã đơn: <strong class="text-dark">#${o.id}</strong></span>
+          <span>${fmtDate(o.createdAt)}</span>
+        </div>
+        <div class="table-responsive mb-3">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light"><tr><th>Sản phẩm</th><th class="text-end">Đơn giá</th><th class="text-center">SL</th><th class="text-end">Thành tiền</th></tr></thead>
+            <tbody>${rows || `<tr><td colspan="4" class="text-muted">Không có dòng hàng.</td></tr>`}</tbody>
+          </table>
+        </div>
+        <div class="small">
+          <div class="d-flex justify-content-between py-1"><span>Tạm tính</span><span>${fmtVnd(sub)}</span></div>
+          <div class="d-flex justify-content-between py-1"><span>Phí vận chuyển</span><span>${ship == null ? "—" : fmtVnd(ship)}</span></div>
+          <div class="d-flex justify-content-between py-1"><span>Giảm giá${vc ? ` <span class="text-muted">(${escapeHtml(vc)})</span>` : ""}</span><span>${discLine}</span></div>
+        </div>
+        <hr class="my-2" />
+        <div class="d-flex justify-content-between fw-bold"><span>Tổng thanh toán</span><span class="text-danger">${fmtVnd(o.totalPrice)}</span></div>
+        <div class="mt-2 p-2 rounded-2 bg-light small">
+          <div><span class="text-muted">Trạng thái đơn:</span> ${escapeHtml(STATUS_LABEL[o.status] || o.status || "—")}</div>
+          <div><span class="text-muted">Thanh toán:</span> ${escapeHtml(o.paymentStatus || "—")}</div>
+          <div><span class="text-muted">Phương thức:</span> ${escapeHtml(PAYMENT_LABEL[o.paymentMethod] || o.paymentMethod || "—")}</div>
+        </div>
+      </div>
+    `;
+  }
+
   function buildOrderCard(o) {
     const st = o.status || "";
     const pm = o.paymentMethod || "";
+    const paySt = o.paymentStatus || "—";
     const statusBadge = `<span class="badge ${badgeClass(st)}">${STATUS_LABEL[st] || st}</span>`;
-    const paymentBadge = `<span class="badge text-bg-light border">${PAYMENT_LABEL[pm] || pm || "—"}</span>`;
-    const items = Array.isArray(o.items) ? o.items : [];
-    const itemsHtml = items.length
-      ? items.map((it) => `<div class="small">- ${it.productName || "Sản phẩm"} x ${it.quantity || 0}</div>`).join("")
-      : `<div class="small text-muted">Chưa có dữ liệu chi tiết sản phẩm.</div>`;
+    const payBadge = `<span class="badge ${paymentStatusBadgeClass(o)}">${escapeHtml(paySt)}</span>`;
+    const methodHint = `<span class="badge text-bg-light border small">${PAYMENT_LABEL[pm] || pm || "—"}</span>`;
     const canCancel = st === "PENDING";
     const actionHtml = canCancel
       ? `<button class="btn btn-sm btn-outline-danger js-cancel-order" data-order-id="${o.id}">Hủy đơn</button>`
@@ -72,17 +133,18 @@
               <div class="small text-muted">${o.itemCount ?? 0} sản phẩm</div>
             </div>
           </div>
-          <div class="d-flex flex-wrap gap-2 mb-2">${statusBadge}${paymentBadge}</div>
-          <div class="mb-2">
-            <div class="text-muted small fw-semibold">Sản phẩm</div>
-            ${itemsHtml}
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">${statusBadge}${payBadge}${methodHint}</div>
+          <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+            <button type="button" class="btn btn-sm btn-outline-primary js-order-receipt" data-order-id="${o.id}">
+              <i class="bi bi-receipt"></i> Xem chi tiết đơn hàng
+            </button>
+            ${actionHtml ? `<div>${actionHtml}</div>` : ""}
           </div>
-          <div class="small">
-            <div><span class="text-muted">Người nhận:</span> ${o.recipientName || "—"} - ${o.recipientPhone || "—"}</div>
-            <div><span class="text-muted">Địa chỉ:</span> ${o.shippingAddress || "—"}</div>
+          <div class="small mt-3 pt-2 border-top">
+            <div><span class="text-muted">Người nhận:</span> ${escapeHtml(o.recipientName || "—")} — ${escapeHtml(o.recipientPhone || "—")}</div>
+            <div><span class="text-muted">Địa chỉ:</span> ${escapeHtml(o.shippingAddress || "—")}</div>
             ${o.customerNote ? `<div class="mt-2"><span class="text-muted">Ghi chú:</span> ${escapeHtml(o.customerNote)}</div>` : ""}
           </div>
-          ${actionHtml ? `<div class="mt-3 d-flex justify-content-end">${actionHtml}</div>` : ""}
         </div>
       </div>
     `;
@@ -158,6 +220,21 @@
     }
 
     document.addEventListener("click", async (evt) => {
+      const recBtn = evt.target.closest(".js-order-receipt");
+      if (recBtn) {
+        const oid = Number(recBtn.getAttribute("data-order-id"));
+        const order = orderMap.get(oid);
+        if (!order) return;
+        const titleEl = document.getElementById("orderReceiptTitle");
+        const bodyEl = document.getElementById("orderReceiptBody");
+        const modalEl = document.getElementById("orderReceiptModal");
+        if (titleEl) titleEl.textContent = `Biên lai đơn #${order.id}`;
+        if (bodyEl) bodyEl.innerHTML = buildReceiptHtml(order);
+        if (modalEl && window.bootstrap) {
+          window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        }
+        return;
+      }
       const btn = evt.target.closest(".js-cancel-order");
       if (!btn) return;
       const orderId = Number(btn.getAttribute("data-order-id"));

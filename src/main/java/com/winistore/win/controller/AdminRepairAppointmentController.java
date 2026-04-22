@@ -120,8 +120,8 @@ public class AdminRepairAppointmentController {
     ) {
         RepairAppointment r = repairAppointmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch hẹn."));
-        if (r.getStatus() == RepairAppointmentStatus.COMPLETED || r.getStatus() == RepairAppointmentStatus.CANCELLED) {
-            throw new IllegalArgumentException("Không thể hẹn lại cho lịch đã hoàn thành hoặc đã hủy.");
+        if (r.getStatus() != RepairAppointmentStatus.PENDING) {
+            throw new IllegalArgumentException("Chỉ có thể đề xuất ngày khác khi lịch đang Chờ xác nhận.");
         }
         List<LocalDate> dates = parseSuggestedDates(req == null ? null : req.suggestedDates());
         if (dates.isEmpty()) {
